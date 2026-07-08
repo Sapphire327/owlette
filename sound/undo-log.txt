@@ -1,0 +1,11 @@
+05:08:42 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sounds to Playlist
+05:09:34 c:\anthill_jobs\job504524\fmod4\tools\fmod_designer\src\eventform.ui.h:1529 HH: Add Simple Event
+05:09:39 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sound to Playlist
+05:10:13 c:\anthill_jobs\job504524\fmod4\tools\fmod_designer\src\eventform.ui.h:1529 HH: Add Simple Event
+05:10:22 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sound to Playlist
+05:10:37 c:\anthill_jobs\job504524\fmod4\tools\fmod_designer\src\eventform.ui.h:1529 HH: Add Simple Event
+05:10:43 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sounds to Playlist
+05:11:01 c:\anthill_jobs\job504524\fmod4\tools\fmod_designer\src\eventform.ui.h:1529 HH: Add Simple Event
+05:11:05 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sound to Playlist
+05:11:18 c:\anthill_jobs\job504524\fmod4\tools\fmod_designer\src\eventform.ui.h:1529 HH: Add Simple Event
+05:11:22 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sound to Playlist

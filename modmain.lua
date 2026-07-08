@@ -4,6 +4,9 @@ PrefabFiles = {
 }
 
 Assets = {
+    Asset ( "SOUNDPACKAGE" , "sound/customvoice.fev" ), 
+    Asset ( "SOUND" , "sound/customvoice.fsb" ),    
+
     Asset( "IMAGE", "images/saveslot_portraits/owlette.tex" ),
     Asset( "ATLAS", "images/saveslot_portraits/owlette.xml" ),
 

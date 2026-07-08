@@ -59,8 +59,8 @@ local master_postinit = function(inst)
     inst.starting_inventory = start_inv[TheNet:GetServerGameMode()] or start_inv.default
 	
 	-- choose which sounds this character will play
-	inst.soundsname = "willow"
-	
+	inst.soundsname = "templateevent"
+	inst.talker_path_override = "customvoice/"
 	-- Uncomment if "wathgrithr"(Wigfrid) or "webber" voice is used
     --inst.talker_path_override = "dontstarve_DLC001/characters/"
 	
