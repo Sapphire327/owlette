@@ -1,0 +1,6 @@
+<Atlas>
+<Texture filename="owlette_bg.tex" />
+<Elements>
+	<Element name="owlette_background.tex" u1="0" u2="0.912109375" v1="0" v2="0.693359375" />
+</Elements>
+</Atlas>

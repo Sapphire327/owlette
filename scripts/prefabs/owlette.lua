@@ -23,18 +23,59 @@ for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
 end
 local prefabs = FlattenTree(start_inv, true)
 
--- When the character is revived from human
+local PHASE_MODIFIERS = {
+    day   = { damage = 0.85, speed = 0.85 },
+    dusk  = { damage = 1.30, speed = 1.0   },
+    night = { damage = 1.30, speed = 1.15 },
+}
+
+local function apply_phase_modifiers(inst)
+    if inst:HasTag("playerghost") then
+        return
+    end
+
+    local phase = TheWorld.state.phase
+    local mods = PHASE_MODIFIERS[phase]
+    if mods then
+        inst.components.combat.damagemultiplier = mods.damage
+        inst.components.locomotor:SetExternalSpeedMultiplier(inst, "owlette_speed_mod", mods.speed)
+    end
+end
+
+local function update_dapperness(inst)
+    if inst:HasTag("playerghost") then
+        inst.components.sanity.dapperness = 0
+        return
+    end
+    if not TheWorld.state.iscave
+        and TheWorld.state.isday
+        and inst.components.sheltered ~= nil
+        and not inst.components.sheltered.sheltered then
+        inst.components.sanity.dapperness = -2/60
+    else
+        inst.components.sanity.dapperness = 0
+    end
+end
+
+local function onphasechange(inst, phase)
+    apply_phase_modifiers(inst)
+    update_dapperness(inst)
+end
+
 local function onbecamehuman(inst)
-	-- Set speed when not a ghost (optional)
-	inst.components.locomotor:SetExternalSpeedMultiplier(inst, "owlette_speed_mod", 1)
+    apply_phase_modifiers(inst)
+    update_dapperness(inst)
 end
 
 local function onbecameghost(inst)
-	-- Remove speed modifier when becoming a ghost
-   inst.components.locomotor:RemoveExternalSpeedMultiplier(inst, "owlette_speed_mod")
+    inst.components.locomotor:RemoveExternalSpeedMultiplier(inst, "owlette_speed_mod")
+    inst.components.sanity.dapperness = 0
 end
 
--- When loading or spawning the character
+local function onshelteredchange(inst)
+    update_dapperness(inst)
+end
+
 local function onload(inst)
     inst:ListenForEvent("ms_respawnedfromghost", onbecamehuman)
     inst:ListenForEvent("ms_becameghost", onbecameghost)
@@ -42,7 +83,8 @@ local function onload(inst)
     if inst:HasTag("playerghost") then
         onbecameghost(inst)
     else
-        onbecamehuman(inst)
+        apply_phase_modifiers(inst)
+        update_dapperness(inst)
     end
 end
 
@@ -69,8 +111,9 @@ local master_postinit = function(inst)
 	inst.components.hunger:SetMax(TUNING.OWLETTE_HUNGER)
 	inst.components.sanity:SetMax(TUNING.OWLETTE_SANITY)
 	
-	-- Damage multiplier (optional)
-    inst.components.combat.damagemultiplier = 1
+	inst:WatchWorldState("phase", onphasechange)
+	inst:ListenForEvent("sheltered", onshelteredchange)
+	update_dapperness(inst)
 	
 	-- Hunger rate (optional)
 	inst.components.hunger.hungerrate = 1 * TUNING.WILSON_HUNGER_RATE
