@@ -1,6 +1,7 @@
 PrefabFiles = {
 	"owlette",
 	"owlette_none",
+	"tent",
 }
 
 Assets = {
