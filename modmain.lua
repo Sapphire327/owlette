@@ -147,3 +147,21 @@ local skin_modes = {
 -- Add mod character to mod character list. Also specify a gender. Possible genders are MALE, FEMALE, ROBOT, NEUTRAL, and PLURAL.
 AddModCharacter("owlette", "FEMALE", skin_modes)
 
+AddBrainPostInit("koalefantbrain", function(self)
+    if not self.bt or not self.bt.root then return end
+    local function find_runaway(node)
+        if node.hunternotags then
+            table.insert(node.hunternotags, "owlette_hunting_1")
+            return true
+        end
+        if node.children then
+            for _, child in ipairs(node.children) do
+                if find_runaway(child) then return true end
+            end
+        end
+        return false
+    end
+    find_runaway(self.bt.root)
+end)
+
+

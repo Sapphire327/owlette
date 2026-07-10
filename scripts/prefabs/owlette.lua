@@ -139,6 +139,8 @@ local master_postinit = function(inst)
 	inst.components.health:SetMaxHealth(TUNING.OWLETTE_HEALTH)
 	inst.components.hunger:SetMax(TUNING.OWLETTE_HUNGER)
 	inst.components.sanity:SetMax(TUNING.OWLETTE_SANITY)
+	inst.components.sanity.night_drain_mult = 0
+	inst.components.sanity.dusk_drain_mult = 0
 	
 	inst:WatchWorldState("phase", onphasechange)
 	inst:ListenForEvent("sheltered", onshelteredchange)
