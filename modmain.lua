@@ -70,8 +70,8 @@ STRINGS.SKILLTREE.OWLETTE = {
 	HUNTING_5_TITLE = "Двойная добыча",
 	HUNTING_5_DESC = "50% шанс получить вдвое больше лута с мелких существ.",
 
-	NIGHTVISION_1_TITLE = "Зоркий глаз",
-	NIGHTVISION_1_DESC = "Радиус ночного зрения увеличен до 6 тайлов.",
+	NIGHTVISION_1_TITLE = "Ночное зрение",
+	NIGHTVISION_1_DESC = "Глаза совы не знают тьмы — Owlette видит каждый уголок даже в самую безлунную ночь.",
 	NIGHTVISION_2_TITLE = "Ясная ночь",
 	NIGHTVISION_2_DESC = "Радиус ночного зрения увеличен до 8 тайлов.",
 	NIGHTVISION_3_TITLE = "Все вижу",
@@ -146,3 +146,4 @@ local skin_modes = {
 
 -- Add mod character to mod character list. Also specify a gender. Possible genders are MALE, FEMALE, ROBOT, NEUTRAL, and PLURAL.
 AddModCharacter("owlette", "FEMALE", skin_modes)
+

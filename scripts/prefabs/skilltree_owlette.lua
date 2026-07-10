@@ -1,8 +1,8 @@
 local SKILLS = {
     -- 🌿 HUNTING BRANCH
     owlette_hunting_1 = {
-        title = STRINGS.SKILLTREE.OWLETTE.HUNTING_1_TITLE,
-        desc = STRINGS.SKILLTREE.OWLETTE.HUNTING_1_DESC,
+        title = STRINGS.SKILLTREE.OWLETTE.HUNTING_3_TITLE,
+        desc = STRINGS.SKILLTREE.OWLETTE.HUNTING_3_DESC,
         pos = {-90, 1},
         group = "hunting",
         tags = {"hunting"},
@@ -11,8 +11,8 @@ local SKILLS = {
         ondeactivate = function(inst, fromload) end,
     },
     owlette_hunting_2 = {
-        title = STRINGS.SKILLTREE.OWLETTE.HUNTING_2_TITLE,
-        desc = STRINGS.SKILLTREE.OWLETTE.HUNTING_2_DESC,
+        title = STRINGS.SKILLTREE.OWLETTE.HUNTING_1_TITLE,
+        desc = STRINGS.SKILLTREE.OWLETTE.HUNTING_1_DESC,
         pos = {-150, 10},
         group = "hunting",
         tags = {"hunting"},
@@ -21,8 +21,8 @@ local SKILLS = {
         ondeactivate = function(inst, fromload) end,
     },
     owlette_hunting_3 = {
-        title = STRINGS.SKILLTREE.OWLETTE.HUNTING_3_TITLE,
-        desc = STRINGS.SKILLTREE.OWLETTE.HUNTING_3_DESC,
+        title = STRINGS.SKILLTREE.OWLETTE.HUNTING_2_TITLE,
+        desc = STRINGS.SKILLTREE.OWLETTE.HUNTING_2_DESC,
         pos = {-200, 50},
         group = "hunting",
         tags = {"hunting"},

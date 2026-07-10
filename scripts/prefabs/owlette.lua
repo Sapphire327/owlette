@@ -89,10 +89,39 @@ local function onload(inst)
 end
 
 
+local function update_nightvision(inst)
+	if inst.components.playervision == nil or TheSkillTree == nil then return end
+
+	if TheSkillTree:IsActivated("owlette_nightvision_1", "owlette") then
+		inst.components.playervision:PushForcedNightVision(inst, 0, nil, true, nil, true)
+	else
+		inst.components.playervision:PopForcedNightVision(inst)
+	end
+end
+
 -- This initializes for both the server and client. Tags can be added here.
 local common_postinit = function(inst) 
 	-- Minimap icon
 	inst.MiniMapEntity:SetIcon( "owlette.tex" )
+
+	inst:AddTag("nocturn")
+
+	-- Night vision skill (client-side)
+	inst:ListenForEvent("onactivateskill_client", function(_, data)
+		if data.skill and data.skill:find("owlette_nightvision") then
+			update_nightvision(inst)
+		end
+	end)
+	inst:ListenForEvent("ondeactivateskill_client", function(_, data)
+		if data.skill and data.skill:find("owlette_nightvision") then
+			update_nightvision(inst)
+		end
+	end)
+
+	-- Restore state on load
+	inst:DoTaskInTime(0, function()
+		update_nightvision(inst)
+	end)
 end
 
 -- This initializes for the server only. Components are added here.
@@ -117,7 +146,7 @@ local master_postinit = function(inst)
 	
 	-- Hunger rate (optional)
 	inst.components.hunger.hungerrate = 1 * TUNING.WILSON_HUNGER_RATE
-	
+
 	inst.OnLoad = onload
     inst.OnNewSpawn = onload
 	
