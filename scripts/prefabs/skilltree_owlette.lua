@@ -23,8 +23,66 @@ local SKILLS = {
         group = "hunting",
         tags = {"hunting"},
         connects = {"owlette_hunting_3"},
-        onactivate = function(inst, fromload) end,
-        ondeactivate = function(inst, fromload) end,
+        onactivate = function(inst, fromload)
+            inst:AddTag("owlette_hunting_2")
+            if not TheWorld.ismastersim then return end
+            inst.owlette_hunting_targets = {}
+            inst.owlette_scan_task = inst:DoPeriodicTask(2, function()
+                if not inst:HasTag("owlette_hunting_2") then return end
+
+                local x, y, z = inst.Transform:GetWorldPosition()
+                local range = 18
+                local current = {}
+
+                local ents = TheSim:FindEntities(x, y, z, range, nil, {"FX", "NOCLICK", "INLIMBO", "playerghost"})
+                for _, v in ipairs(ents) do
+                    if v:IsValid() then
+                        local highlight = false
+                        if v.prefab == "rabbithole" or v.prefab == "molehill" then
+                            if v.components.spawner ~= nil and v.components.spawner:IsOccupied() then
+                                highlight = true
+                            end
+                        elseif v:HasTag("track") then
+                            highlight = true
+                        end
+                        if highlight then
+                            current[v] = true
+                            if not inst.owlette_hunting_targets[v] then
+                                if v:HasTag("track") then
+                                    v.AnimState:SetAddColour(0.25, 0.15, 0, 0)
+                                else
+                                    v.AnimState:SetAddColour(0, 0.15, 0.25, 0)
+                                end
+                            end
+                        end
+                    end
+                end
+
+                for entity, _ in pairs(inst.owlette_hunting_targets) do
+                    if not current[entity] or not entity:IsValid() then
+                        if entity:IsValid() then
+                            entity.AnimState:SetAddColour(0, 0, 0, 0)
+                        end
+                    end
+                end
+
+                inst.owlette_hunting_targets = current
+            end)
+        end,
+        ondeactivate = function(inst, fromload)
+            inst:RemoveTag("owlette_hunting_2")
+            if not TheWorld.ismastersim then return end
+            if inst.owlette_scan_task ~= nil then
+                inst.owlette_scan_task:Cancel()
+                inst.owlette_scan_task = nil
+            end
+            for entity, _ in pairs(inst.owlette_hunting_targets or {}) do
+                if entity:IsValid() then
+                    entity.AnimState:SetAddColour(0, 0, 0, 0)
+                end
+            end
+            inst.owlette_hunting_targets = {}
+        end,
     },
     owlette_hunting_3 = {
         title = STRINGS.SKILLTREE.OWLETTE.HUNTING_2_TITLE,

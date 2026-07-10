@@ -99,6 +99,7 @@ local function update_nightvision(inst)
 	end
 end
 
+
 -- This initializes for both the server and client. Tags can be added here.
 local common_postinit = function(inst) 
 	-- Minimap icon
