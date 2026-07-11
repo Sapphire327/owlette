@@ -1740,6 +1740,9 @@ local actionhandlers =
 			inst.sg.statemem.charging = true
 			return "club_putt_pre"
 		end),
+
+    -- Owlette: Выманивание (scratch burrow)
+    ActionHandler(ACTIONS.SCRATCH_BURROW, "scratch_burrow"),
 }
 
 local events =
@@ -4001,7 +4004,7 @@ local states =
 
 			--death_vinesave_pst is quite short, about 10 frames
 			--screen fade 2 seconds
-			inst.sg:SetTimeout(3)
+        inst.sg:SetTimeout(2)
 		end,
 
 		events =
@@ -28597,5 +28600,33 @@ SGWX78Common.AddWX78UseDroneStates(states)
 if TheNet:GetServerGameMode() == "quagmire" then
     event_server_data("quagmire", "stategraphs/SGwilson").AddQuagmireStates(states, DoTalkSound, StopTalkSound, ToggleOnPhysics, ToggleOffPhysics)
 end
+
+--------------------------------------------------------------------------
+-- Owlette: Выманивание (scratch burrow)
+--------------------------------------------------------------------------
+
+table.insert(states, State{
+    name = "scratch_burrow",
+    tags = { "doing", "busy" },
+
+    onenter = function(inst)
+        inst.components.locomotor:Stop()
+        inst.sg.statemem.action = inst:GetBufferedAction()
+        inst.AnimState:PlayAnimation("build_pre")
+        inst.AnimState:PushAnimation("build_loop", true)
+        inst.sg:SetTimeout(2)
+    end,
+
+    timeline = {},
+
+    ontimeout = function(inst)
+        inst.AnimState:PlayAnimation("build_pst")
+        inst:PerformBufferedAction()
+        if inst.bufferedaction == inst.sg.statemem.action then
+            inst:ClearBufferedAction()
+        end
+        inst.sg:GoToState("idle")
+    end,
+})
 
 return StateGraph("wilson", states, events, "init", actionhandlers)

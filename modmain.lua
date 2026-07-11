@@ -165,4 +165,49 @@ AddBrainPostInit("koalefantbrain", function(self)
     find_runaway(self.bt.root)
 end)
 
+-- Skill: Выманивание (Luring) - scratch burrows to flush out rabbits/moles
+local ACTIONS = GLOBAL.ACTIONS
+local STRINGS = GLOBAL.STRINGS
+
+STRINGS.ACTIONS.SCRATCH_BURROW = "Выманить"
+
+ACTIONS.SCRATCH_BURROW = AddAction("SCRATCH_BURROW", STRINGS.ACTIONS.SCRATCH_BURROW, function(act)
+    local target = act.target
+    local doer = act.doer
+    if not target or not target:IsValid() then return false end
+
+    local spawner = target.components.spawner
+    if not spawner then return false end
+
+    if not spawner.child or not spawner.child:IsValid() then
+        if doer.components.talker then
+            doer.components.talker:Say("The burrow is empty.")
+        end
+        return false
+    end
+
+    local child = spawner.child
+    spawner:SetQueueSpawning(false)
+    spawner:ReleaseChild()
+
+    if child.components.locomotor then
+        local angle = child:GetAngleToPoint(doer:GetPosition()) + 180
+        if angle > 360 then angle = angle - 360 end
+        child.components.locomotor:RunInDirection(angle)
+    end
+    child:DoTaskInTime(3, function()
+        if child:IsValid() and child.components.locomotor then
+            child.components.locomotor:Stop()
+        end
+    end)
+    return true
+end)
+
+AddComponentAction("SCENE", "spawner", function(inst, doer, actions, right)
+    if doer:HasTag("owlette_hunting_3") and
+       (inst.prefab == "rabbithole" or inst.prefab == "molehill") then
+        table.insert(actions, ACTIONS.SCRATCH_BURROW)
+    end
+end)
+
 

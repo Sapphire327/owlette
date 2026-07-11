@@ -25,8 +25,8 @@ local prefabs = FlattenTree(start_inv, true)
 
 local PHASE_MODIFIERS = {
     day   = { damage = 0.85, speed = 0.85 },
-    dusk  = { damage = 1.30, speed = 1.0   },
-    night = { damage = 1.30, speed = 1.15 },
+    dusk  = { damage = 1.0, speed = 1.0   },
+    night = { damage = 1.0, speed = 1.0 },
 }
 
 local function apply_phase_modifiers(inst)
