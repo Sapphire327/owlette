@@ -60,18 +60,18 @@ STRINGS.SKIN_NAMES.owlette_none = "Owlette"
 
 -- Skill tree strings
 STRINGS.SKILLTREE.OWLETTE = {
-	HUNTING_1_TITLE = "Острое зрение",
-	HUNTING_1_DESC = "Owlette видит индикаторы нор, следов и спрятавшихся индеек.",
+	HUNTING_1_TITLE = "Охота",
+	HUNTING_1_DESC = "занятые кроликом норы, будут подсвечены. Лучшая видимость следов коалослона",
 	HUNTING_2_TITLE = "Выманивание",
-	HUNTING_2_DESC = "Скребите когтями у норы, чтобы выманить кролика или крота.",
+	HUNTING_2_DESC = "Скребите когтями у норы, чтобы выманить кролика.",
 	HUNTING_3_TITLE = "Тихий полёт",
-	HUNTING_3_DESC = "Пассивные существа замечают Owlette с меньшего расстояния.",
+	HUNTING_3_DESC = "Кролики и Коалослоны не слышат приближающейся опасности.",
 	HUNTING_4_TITLE = "Птицелов",
-	HUNTING_4_DESC = "Птиц можно ловить руками, они не улетают при приближении.",
+	HUNTING_4_DESC = "Птицы не улетают при приближении.",
 	HUNTING_5_TITLE = "Двойная добыча",
 	HUNTING_5_DESC = "50% шанс получить вдвое больше лута с мелких существ.",
 
-	NIGHTVISION_1_TITLE = "Ночное зрение",
+	NIGHTVISION_1_TITLE = "Ночное преимущество",
 	NIGHTVISION_1_DESC = "Глаза совы не знают тьмы — Owlette видит каждый уголок даже в самую безлунную ночь.",
 	NIGHTVISION_2_TITLE = "Ясная ночь",
 	NIGHTVISION_2_DESC = "Радиус ночного зрения увеличен до 8 тайлов.",
@@ -163,6 +163,52 @@ AddBrainPostInit("koalefantbrain", function(self)
         return false
     end
     find_runaway(self.bt.root)
+end)
+
+-- Skill: Птицелов (Bird Catcher) - birds don't flee from Owlette with hunting_4
+AddBrainPostInit("birdbrain", function(self)
+    if not self.bt or not self.bt.root then return end
+
+    local function find_threat_node(node)
+        if node.name == "Threat Near" and node.fn then
+            return node
+        end
+        if node.children then
+            for _, child in ipairs(node.children) do
+                local found = find_threat_node(child)
+                if found then return found end
+            end
+        end
+        return nil
+    end
+
+    local threat_node = find_threat_node(self.bt.root)
+    if not threat_node then return end
+
+    local old_fn = threat_node.fn
+    threat_node.fn = function()
+        if not old_fn() then return false end
+
+        local inst = self.inst
+        if not inst:IsValid() or not inst.Transform then return true end
+
+        local x, y, z = inst.Transform:GetWorldPosition()
+        local radius = inst.flyawaydistance or 20
+
+        local ents = GLOBAL.TheSim:FindEntities(x, y, z, radius, nil, nil,
+            { "notarget", "INLIMBO" },
+            { "player", "monster", "scarytoprey" })
+
+        for _, v in ipairs(ents) do
+            if v ~= inst and v.entity:IsVisible() then
+                if not (v:HasTag("player") and v:HasTag("owlette_hunting_4") and not v:HasTag("playerghost")) then
+                    return true
+                end
+            end
+        end
+
+        return false
+    end
 end)
 
 -- Skill: Выманивание (Luring) - scratch burrows to flush out rabbits/moles

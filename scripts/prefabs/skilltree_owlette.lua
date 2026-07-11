@@ -105,8 +105,12 @@ local SKILLS = {
         group = "hunting",
         tags = {"hunting"},
         connects = {"owlette_hunting_5"},
-        onactivate = function(inst, fromload) end,
-        ondeactivate = function(inst, fromload) end,
+        onactivate = function(inst, fromload)
+            inst:AddTag("owlette_hunting_4")
+        end,
+        ondeactivate = function(inst, fromload)
+            inst:RemoveTag("owlette_hunting_4")
+        end,
     },
     owlette_hunting_5 = {
         title = STRINGS.SKILLTREE.OWLETTE.HUNTING_5_TITLE,
