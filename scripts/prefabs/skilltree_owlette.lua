@@ -118,8 +118,12 @@ local SKILLS = {
         pos = {-200, 170},
         group = "hunting",
         tags = {"hunting"},
-        onactivate = function(inst, fromload) end,
-        ondeactivate = function(inst, fromload) end,
+        onactivate = function(inst, fromload)
+            inst:AddTag("owlette_hunting_5")
+        end,
+        ondeactivate = function(inst, fromload)
+            inst:RemoveTag("owlette_hunting_5")
+        end,
     },
 
     -- 🌙 NIGHT VISION BRANCH (hub at bottom, central column)

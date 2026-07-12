@@ -86,6 +86,8 @@ local function onload(inst)
         apply_phase_modifiers(inst)
         update_dapperness(inst)
     end
+
+    inst.owlette_feather_day = inst.owlette_feather_day or 0
 end
 
 
@@ -152,6 +154,22 @@ local master_postinit = function(inst)
 
 	inst.OnLoad = onload
     inst.OnNewSpawn = onload
+
+    -- Feather drop: every 3 mornings
+    inst.owlette_feather_day = 0
+    inst:WatchWorldState("phase", function(inst, phase)
+        if phase ~= "day" then return end
+        inst.owlette_feather_day = inst.owlette_feather_day + 1
+        if inst.owlette_feather_day < 3 then return end
+    inst.owlette_feather_day = inst.owlette_feather_day or 0
+
+        local feather = SpawnPrefab("owlette_feather")
+        if feather then
+            local x, y, z = inst.Transform:GetWorldPosition()
+            feather.Transform:SetPosition(x, y, z)
+        end
+        inst.components.talker:Say("An owl feather falls to the ground.")
+    end)
 	
 end
 

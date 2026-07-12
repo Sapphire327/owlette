@@ -2,6 +2,7 @@ PrefabFiles = {
 	"owlette",
 	"owlette_none",
 	"tent",
+	"owlette_feather",
 }
 
 Assets = {
@@ -41,6 +42,13 @@ Assets = {
 
 AddMinimapAtlas("images/map_icons/owlette.xml")
 
+-- Owl Feather item
+Assets = Assets or {}
+table.insert(Assets, Asset("ANIM", "anim/owlette_feather.zip"))
+table.insert(Assets, Asset("ATLAS", "images/inventoryimages/owlette_feather.xml"))
+table.insert(Assets, Asset("IMAGE", "images/inventoryimages/owlette_feather.tex"))
+GLOBAL.RegisterInventoryItemAtlas("images/inventoryimages/owlette_feather.xml", "owlette_feather")
+
 local require = GLOBAL.require
 local STRINGS = GLOBAL.STRINGS
 
@@ -53,6 +61,10 @@ STRINGS.CHARACTER_SURVIVABILITY.owlette = "Slim"
 
 -- Custom speech strings
 STRINGS.CHARACTERS.OWLETTE = require "speech_owlette"
+
+-- Owl Feather strings
+STRINGS.NAMES.OWLETTE_FEATHER = "Owl Feather"
+STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_FEATHER = "A soft feather from Owlette."
 
 -- The character's name as appears in-game 
 STRINGS.NAMES.OWLETTE = "Owlette"
@@ -195,9 +207,11 @@ AddBrainPostInit("birdbrain", function(self)
         local x, y, z = inst.Transform:GetWorldPosition()
         local radius = inst.flyawaydistance or 20
 
-        local ents = GLOBAL.TheSim:FindEntities(x, y, z, radius, nil, nil,
+        local ents = GLOBAL.TheSim:FindEntities(x, y, z, radius, nil,
             { "notarget", "INLIMBO" },
             { "player", "monster", "scarytoprey" })
+
+        if #ents == 0 then return true end
 
         for _, v in ipairs(ents) do
             if v ~= inst and v.entity:IsVisible() then
@@ -210,6 +224,31 @@ AddBrainPostInit("birdbrain", function(self)
         return false
     end
 end)
+
+-- Skill: Двойная добыча (Double Loot) - 50% chance to double loot from small creatures
+local SMALL_CREATURES = { "rabbit", "crow", "robin", "robin_winter", "canary", "frog", "spider", "mole", "catcoon" }
+for _, prefab in ipairs(SMALL_CREATURES) do
+    AddPrefabPostInit(prefab, function(inst)
+        if not GLOBAL.TheWorld.ismastersim then return end
+        local lootdropper = inst.components.lootdropper
+        if not lootdropper then return end
+
+        local old_spawn = lootdropper.SpawnLootPrefab
+        lootdropper.SpawnLootPrefab = function(self, lootprefab, pt, ...)
+            local result = old_spawn(self, lootprefab, pt, ...)
+            if result then
+                local attacker = self.inst.components.combat and self.inst.components.combat.lastattacker
+                if attacker and attacker:IsValid() and
+                    attacker:HasTag("owlette_hunting_5") and
+                    not attacker:HasTag("playerghost") and
+                    math.random() <= 0.5 then
+                    old_spawn(self, lootprefab, pt, ...)
+                end
+            end
+            return result
+        end
+    end)
+end
 
 -- Skill: Выманивание (Luring) - scratch burrows to flush out rabbits/moles
 local ACTIONS = GLOBAL.ACTIONS
