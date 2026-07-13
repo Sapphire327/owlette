@@ -8,6 +8,11 @@ local assets =
 
 local ATTACK_PERIOD = 0.4
 local ATTACK_SPEED_BOOST = 0.9 -- claws_2: -15% period
+local BLEED_CHANCE_4 = 1.0
+local BLEED_CHANCE_5 = 1.0
+local BLEED_DAMAGE_4 = 10
+local BLEED_DAMAGE_5 = 15
+local BLEED_DURATION = 3
 
 local function IsFacingAway(owner)
     local char_dir = owner.Transform:GetRotation()
@@ -44,6 +49,36 @@ local function UpdateAttackPeriod(weapon, owner)
     weapon.attackperiod = period
 end
 
+local function StartBleed(target, dps, duration)
+    if not target or not target:IsValid() or not target.components.health then return end
+
+    if target._owlette_bleedtask then
+        target._owlette_bleedtask:Cancel()
+    end
+
+    local ticks = duration
+
+    target._owlette_bleedtask = target:DoPeriodicTask(1, function()
+        if not target:IsValid() or not target.components.health then
+            return
+        end
+
+        target.components.health:DoDelta(-dps, false, "owlette_claws")
+        target.AnimState:SetAddColour(0.25, 0, 0, 0)
+        target:DoTaskInTime(0.15, function()
+            if target:IsValid() then
+                target.AnimState:SetAddColour(0, 0, 0, 0)
+            end
+        end)
+
+        ticks = ticks - 1
+        if ticks <= 0 then
+            target._owlette_bleedtask:Cancel()
+            target._owlette_bleedtask = nil
+        end
+    end)
+end
+
 local function OnEquip(inst, owner)
     UpdateClawsVisual(inst)
 
@@ -70,6 +105,24 @@ local function OnEquip(inst, owner)
         inst.components.weapon.attackperiod = period
         owner.components.combat:SetAttackPeriod(period)
     end
+
+    inst._onhitother_fn = function(_, data)
+        local target = data and data.target
+        if not target or not target:IsValid() or not target.components.health then return end
+        local chance = nil
+        local dmg = nil
+        if owner:HasTag("owlette_claws_5") then
+            chance = BLEED_CHANCE_5
+            dmg = BLEED_DAMAGE_5
+        elseif owner:HasTag("owlette_claws_4") then
+            chance = BLEED_CHANCE_4
+            dmg = BLEED_DAMAGE_4
+        end
+        if chance and dmg and math.random() <= chance then
+            StartBleed(target, dmg, BLEED_DURATION)
+        end
+    end
+    owner:ListenForEvent("onhitother", inst._onhitother_fn)
 end
 
 local function OnUnequip(inst, owner)
@@ -92,6 +145,11 @@ local function OnUnequip(inst, owner)
     if owner.components.combat and inst._old_attackperiod then
         owner.components.combat:SetAttackPeriod(inst._old_attackperiod)
         inst._old_attackperiod = nil
+    end
+
+    if inst._onhitother_fn then
+        owner:RemoveEventCallback("onhitother", inst._onhitother_fn)
+        inst._onhitother_fn = nil
     end
 end
 
