@@ -113,6 +113,13 @@ local function fn()
     inst.components.equippable:SetOnUnequip(OnUnequip)
 
     inst.components.weapon:SetDamage(34)
+    inst.components.weapon.GetDamage = function(self)
+        local owner = inst.components.inventoryitem:GetGrandOwner()
+        if owner and owner:IsValid() and owner:HasTag("owlette_claws_1") then
+            return 40
+        end
+        return 34
+    end
     inst.components.weapon.attackperiod = ATTACK_PERIOD
 
     MakeHauntableLaunch(inst)

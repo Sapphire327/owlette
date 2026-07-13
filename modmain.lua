@@ -118,7 +118,7 @@ STRINGS.SKILLTREE.OWLETTE = {
 	NIGHTVISION_4_DESC = "Радиус ночного зрения увеличен до 12 тайлов.",
 
 	CLAWS_1_TITLE = "Когти наточены",
-	CLAWS_1_DESC = "Базовый урон Talon Gauntlets увеличен до 44.",
+	CLAWS_1_DESC = "Базовый урон Talon Gauntlets увеличен до 40.",
 	CLAWS_2_TITLE = "Острые когти",
 	CLAWS_2_DESC = "Скорость атаки когтями увеличена на 15%.",
 	CLAWS_3_TITLE = "Когти отполированы",
