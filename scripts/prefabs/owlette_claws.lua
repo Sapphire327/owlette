@@ -6,7 +6,7 @@ local assets =
     Asset("IMAGE", "images/inventoryimages/owlette_claws.tex"),
 }
 
-local ATTACK_PERIOD = 0.1
+local ATTACK_PERIOD = 0.38
 
 local function IsFacingAway(owner)
     local char_dir = owner.Transform:GetRotation()
@@ -47,10 +47,10 @@ local function OnEquip(inst, owner)
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 
-    if owner.components.combat then
-        inst._old_attackperiod = owner.components.combat.min_attack_period
-        owner.components.combat:SetAttackPeriod(ATTACK_PERIOD)
-    end
+    -- if owner.components.combat then
+    --     inst._old_attackperiod = owner.components.combat.min_attack_period
+    --     owner.components.combat:SetAttackPeriod(ATTACK_PERIOD)
+    -- end
 end
 
 local function OnUnequip(inst, owner)
@@ -70,10 +70,10 @@ local function OnUnequip(inst, owner)
 
     owner.AnimState:ClearOverrideSymbol("swap_body")
 
-    if owner.components.combat and inst._old_attackperiod then
-        owner.components.combat:SetAttackPeriod(inst._old_attackperiod)
-        inst._old_attackperiod = nil
-    end
+    -- if owner.components.combat and inst._old_attackperiod then
+    --     owner.components.combat:SetAttackPeriod(inst._old_attackperiod)
+    --     inst._old_attackperiod = nil
+    -- end
 end
 
 local function fn()
@@ -113,6 +113,7 @@ local function fn()
     inst.components.equippable:SetOnUnequip(OnUnequip)
 
     inst.components.weapon:SetDamage(34)
+    inst.components.weapon.attackperiod = ATTACK_PERIOD
 
     MakeHauntableLaunch(inst)
 

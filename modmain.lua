@@ -320,4 +320,39 @@ AddComponentAction("SCENE", "spawner", function(inst, doer, actions, right)
     end
 end)
 
+-- Claws attack speed boost (works for any character equipping owlette_claws)
+AddStategraphPostInit("wilson", function(sg)
+    local _attack = sg.states["attack"]
+    if not _attack then return end
+
+    local _onenter = _attack.onenter
+    _attack.onenter = function(inst, ...)
+        _onenter(inst, ...)
+
+        if not inst.sg.timeout or inst.sg.timeout <= 0 then return end
+
+        local hand = inst.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.HANDS)
+        if not hand or hand.prefab ~= "owlette_claws" or not hand.components.weapon then return end
+
+        local desired = hand.components.weapon.attackperiod
+        if not desired or desired <= 0 then return end
+
+        local speed = inst.sg.timeout / desired
+        inst.sg:SetTimeout(inst.sg.timeout / speed)
+        inst.AnimState:SetDeltaTimeMultiplier(speed)
+        inst.sg.statemem.claws_speed = speed
+    end
+
+    local _onexit = _attack.onexit
+    _attack.onexit = function(inst, ...)
+        if inst.sg.statemem.claws_speed then
+            inst.AnimState:SetDeltaTimeMultiplier(1)
+            inst.sg.statemem.claws_speed = nil
+        end
+        if _onexit then
+            return _onexit(inst, ...)
+        end
+    end
+end)
+
 
