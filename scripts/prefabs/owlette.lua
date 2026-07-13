@@ -107,6 +107,7 @@ local common_postinit = function(inst)
 	-- Minimap icon
 	inst.MiniMapEntity:SetIcon( "owlette.tex" )
 
+	inst:AddTag("owlette")
 	inst:AddTag("nocturn")
 
 	-- Night vision skill (client-side)

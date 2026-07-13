@@ -297,6 +297,7 @@
                     <object_ref id="95" name="tail_0_72" folder="14" file="5" abs_x="89.590404" abs_y="98.218697" abs_pivot_x="0.628" abs_pivot_y="0.5" abs_angle="251.749" abs_scale_x="-0.990905" abs_scale_y="0.990905" abs_a="1" timeline="72" key="0" z_index="95"/>
                     <object_ref id="96" name="hairfront_0_84" folder="15" file="0" abs_x="-327.5615" abs_y="203.449" abs_pivot_x="0.50563" abs_pivot_y="0.381312" abs_angle="0" abs_scale_x="1" abs_scale_y="1" abs_a="1" timeline="84" key="0" z_index="96"/>
                     <object_ref id="97" name="hairfront_1_85" folder="15" file="1" abs_x="326.701" abs_y="208.399" abs_pivot_x="0.557936" abs_pivot_y="0.399752" abs_angle="0" abs_scale_x="1" abs_scale_y="1" abs_a="1" timeline="85" key="0" z_index="97"/>
+                    <object_ref id="98" name="swap_object" folder="5" file="0" abs_x="320.501" abs_y="51.199" abs_pivot_x="0.5" abs_pivot_y="0.5" abs_angle="0" abs_scale_x="1" abs_scale_y="1" abs_a="1" timeline="98" key="0" z_index="100"/>
                 </key>
             </mainline>
             <timeline id="0" name="face_0_0">
@@ -787,6 +788,11 @@
             <timeline id="97" name="arm_upper_skin_0_97">
                 <key id="0" spin="0">
                     <object folder="16" file="0" x="359.45" y="109.299" angle="61.016408" scale_x="0.995619" scale_y="0.995619"/>
+                </key>
+            </timeline>
+            <timeline id="98" name="swap_object">
+                <key id="0" spin="0">
+                    <object folder="5" file="0" x="320.501" y="51.199" angle="0"/>
                 </key>
             </timeline>
         </animation>

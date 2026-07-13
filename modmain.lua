@@ -3,6 +3,7 @@ PrefabFiles = {
 	"owlette_none",
 	"tent",
 	"owlette_feather",
+	"owlette_claws",
 }
 
 Assets = {
@@ -49,8 +50,28 @@ table.insert(Assets, Asset("ATLAS", "images/inventoryimages/owlette_feather.xml"
 table.insert(Assets, Asset("IMAGE", "images/inventoryimages/owlette_feather.tex"))
 GLOBAL.RegisterInventoryItemAtlas("images/inventoryimages/owlette_feather.xml", "owlette_feather")
 
+-- Claws item
+Assets = Assets or {}
+table.insert(Assets, Asset("ANIM", "anim/claws.zip"))
+table.insert(Assets, Asset("ATLAS", "images/inventoryimages/owlette_claws.xml"))
+table.insert(Assets, Asset("IMAGE", "images/inventoryimages/owlette_claws.tex"))
+GLOBAL.RegisterInventoryItemAtlas("images/inventoryimages/owlette_claws.xml", "owlette_claws.tex")
+
 local require = GLOBAL.require
+local Ingredient = GLOBAL.Ingredient
+
 local STRINGS = GLOBAL.STRINGS
+
+AddRecipe2("owlette_claws",
+    { Ingredient("flint", 2), Ingredient("twigs", 4), Ingredient("owlette_feather", 2) },
+    { SCIENCE = 1 },
+    {
+        builder_tag = "owlette",
+        atlas = "images/inventoryimages/owlette_claws.xml",
+        image = "owlette_claws",
+        numtogive = 1,
+    }
+)
 
 -- The character select screen lines
 STRINGS.CHARACTER_TITLES.owlette = "A creature of the night, Owlette is strongest when the moon is high."
@@ -65,6 +86,10 @@ STRINGS.CHARACTERS.OWLETTE = require "speech_owlette"
 -- Owl Feather strings
 STRINGS.NAMES.OWLETTE_FEATHER = "Owl Feather"
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_FEATHER = "A soft feather from Owlette."
+
+-- Claws strings
+STRINGS.NAMES.OWLETTE_CLAWS = "Когти"
+STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_CLAWS = "Острые совиные когти."
 
 -- The character's name as appears in-game 
 STRINGS.NAMES.OWLETTE = "Owlette"
