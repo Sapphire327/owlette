@@ -176,7 +176,7 @@ local SKILLS = {
         pos = {-90, 50},
         group = "claws",
         tags = {"claws"},
-        connects = {"owlette_claws_2"},
+        connects = {"owlette_claws_3"},
         onactivate = function(inst, fromload)
             inst:AddTag("owlette_claws_1")
         end,
@@ -187,27 +187,50 @@ local SKILLS = {
     owlette_claws_2 = {
         title = STRINGS.SKILLTREE.OWLETTE.CLAWS_2_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.CLAWS_2_DESC,
-        pos = {-120, 97.5},
+        pos = {-130, 240},
         group = "claws",
         tags = {"claws"},
-        connects = {"owlette_claws_3"},
-        onactivate = function(inst, fromload) end,
-        ondeactivate = function(inst, fromload) end,
+        onactivate = function(inst, fromload)
+            inst:AddTag("owlette_claws_2")
+            local weapon = inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
+            if weapon and weapon.prefab == "owlette_claws" and weapon.components.weapon then
+                local fn = weapon.components.weapon.UpdateAttackPeriod
+                if fn then fn(weapon.components.weapon, inst) end
+                if not fromload and inst.components.combat then
+                    inst.components.combat:SetAttackPeriod(weapon.components.weapon.attackperiod)
+                end
+            end
+        end,
+        ondeactivate = function(inst, fromload)
+            inst:RemoveTag("owlette_claws_2")
+            local weapon = inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
+            if weapon and weapon.prefab == "owlette_claws" and weapon.components.weapon then
+                local fn = weapon.components.weapon.UpdateAttackPeriod
+                if fn then fn(weapon.components.weapon, inst) end
+                if not fromload and inst.components.combat then
+                    inst.components.combat:SetAttackPeriod(weapon.components.weapon.attackperiod)
+                end
+            end
+        end,
     },
     owlette_claws_3 = {
         title = STRINGS.SKILLTREE.OWLETTE.CLAWS_3_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.CLAWS_3_DESC,
-        pos = {-135, 145},
+        pos = {-120, 97.5},
         group = "claws",
         tags = {"claws"},
         connects = {"owlette_claws_4"},
-        onactivate = function(inst, fromload) end,
-        ondeactivate = function(inst, fromload) end,
+        onactivate = function(inst, fromload)
+            inst:AddTag("owlette_claws_3")
+        end,
+        ondeactivate = function(inst, fromload)
+            inst:RemoveTag("owlette_claws_3")
+        end,
     },
     owlette_claws_4 = {
         title = STRINGS.SKILLTREE.OWLETTE.CLAWS_4_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.CLAWS_4_DESC,
-        pos = {-140, 192.5},
+        pos = {-135, 145},
         group = "claws",
         tags = {"claws"},
         connects = {"owlette_claws_5"},
@@ -217,7 +240,8 @@ local SKILLS = {
     owlette_claws_5 = {
         title = STRINGS.SKILLTREE.OWLETTE.CLAWS_5_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.CLAWS_5_DESC,
-        pos = {-130,240},
+        pos = {-140, 192.5},
+        connects = {"owlette_claws_2"},
         group = "claws",
         tags = {"claws"},
         onactivate = function(inst, fromload) end,

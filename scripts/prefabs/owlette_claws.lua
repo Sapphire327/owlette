@@ -6,7 +6,8 @@ local assets =
     Asset("IMAGE", "images/inventoryimages/owlette_claws.tex"),
 }
 
-local ATTACK_PERIOD = 0.38
+local ATTACK_PERIOD = 0.4
+local ATTACK_SPEED_BOOST = 0.9 -- claws_2: -15% period
 
 local function IsFacingAway(owner)
     local char_dir = owner.Transform:GetRotation()
@@ -33,6 +34,16 @@ local function UpdateClawsVisual(inst)
     end
 end
 
+local function UpdateAttackPeriod(weapon, owner)
+    if not weapon or not owner or not owner:IsValid() then return end
+    local base = weapon._base_attackperiod
+    local period = base
+    if owner:HasTag("owlette_claws_2") then
+        period = period * ATTACK_SPEED_BOOST
+    end
+    weapon.attackperiod = period
+end
+
 local function OnEquip(inst, owner)
     UpdateClawsVisual(inst)
 
@@ -47,10 +58,18 @@ local function OnEquip(inst, owner)
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 
-    -- if owner.components.combat then
-    --     inst._old_attackperiod = owner.components.combat.min_attack_period
-    --     owner.components.combat:SetAttackPeriod(ATTACK_PERIOD)
-    -- end
+    if owner.components.combat then
+        inst._old_attackperiod = owner.components.combat.min_attack_period
+        local period = inst.components.weapon.attackperiod
+        if not period then
+            period = inst.components.weapon._base_attackperiod
+        end
+        if owner:HasTag("owlette_claws_2") then
+            period = period * ATTACK_SPEED_BOOST
+        end
+        inst.components.weapon.attackperiod = period
+        owner.components.combat:SetAttackPeriod(period)
+    end
 end
 
 local function OnUnequip(inst, owner)
@@ -70,10 +89,10 @@ local function OnUnequip(inst, owner)
 
     owner.AnimState:ClearOverrideSymbol("swap_body")
 
-    -- if owner.components.combat and inst._old_attackperiod then
-    --     owner.components.combat:SetAttackPeriod(inst._old_attackperiod)
-    --     inst._old_attackperiod = nil
-    -- end
+    if owner.components.combat and inst._old_attackperiod then
+        owner.components.combat:SetAttackPeriod(inst._old_attackperiod)
+        inst._old_attackperiod = nil
+    end
 end
 
 local function fn()
@@ -115,12 +134,19 @@ local function fn()
     inst.components.weapon:SetDamage(34)
     inst.components.weapon.GetDamage = function(self)
         local owner = inst.components.inventoryitem:GetGrandOwner()
-        if owner and owner:IsValid() and owner:HasTag("owlette_claws_1") then
-            return 40
+        if owner and owner:IsValid() then
+            if owner:HasTag("owlette_claws_3") then
+                return 45
+            end
+            if owner:HasTag("owlette_claws_1") then
+                return 40
+            end
         end
         return 34
     end
     inst.components.weapon.attackperiod = ATTACK_PERIOD
+    inst.components.weapon._base_attackperiod = ATTACK_PERIOD
+    inst.components.weapon.UpdateAttackPeriod = UpdateAttackPeriod
 
     MakeHauntableLaunch(inst)
 
