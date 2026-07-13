@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <spriter_data scml_version="1.0" generator="BrashMonkey Spriter" generator_version="b5">
     <folder id="0" name="swap_object">
-        <file id="0" name="swap_object/swap_object-0.png" width="89" height="60" pivot_x="0.432404" pivot_y="0.712559"/>
+        <file id="0" name="swap_object/swap_object-0.png" width="89" height="60" pivot_x="0.543195" pivot_y="0.551354"/>
     </folder>
     <folder id="1" name="wilson">
         <file id="0" name="wilson/wilson-0.png" width="244" height="374" pivot_x="0" pivot_y="1"/>
@@ -12,8 +12,8 @@
         <animation id="0" name="BUILD" length="67">
             <mainline>
                 <key id="0">
-                    <object_ref id="0" name="swap_body" folder="0" file="0" abs_x="181.649573" abs_y="74.101462" abs_pivot_x="0.432404" abs_pivot_y="0.712559" abs_angle="0" abs_scale_x="1" abs_scale_y="1" abs_a="1" timeline="0" key="0" z_index="0"/>
-                    <object_ref id="1" name="swap_object" folder="0" file="0" abs_x="-278.041957" abs_y="103.273261" abs_pivot_x="0.432404" abs_pivot_y="0.712559" abs_angle="16.563897" abs_scale_x="0.948755" abs_scale_y="0.948755" abs_a="1" timeline="1" key="0" z_index="1"/>
+                    <object_ref id="0" name="swap_body" folder="0" file="0" abs_x="229.993919" abs_y="47.182697" abs_pivot_x="0.543195" abs_pivot_y="0.551354" abs_angle="0" abs_scale_x="1" abs_scale_y="1" abs_a="1" timeline="0" key="0" z_index="0"/>
+                    <object_ref id="1" name="swap_object" folder="0" file="0" abs_x="-266.458957" abs_y="97.144414" abs_pivot_x="0.543195" abs_pivot_y="0.551354" abs_angle="16.563897" abs_scale_x="0.948755" abs_scale_y="0.948755" abs_a="1" timeline="1" key="0" z_index="1"/>
                     <object_ref id="2" name="wilson-1_000" folder="1" file="1" abs_x="-146.75325" abs_y="372.42857" abs_pivot_x="0" abs_pivot_y="1" abs_angle="0" abs_scale_x="1" abs_scale_y="1" abs_a="1" timeline="3" key="0" z_index="2"/>
                     <object_ref id="3" name="wilson-0" folder="1" file="0" abs_x="-548.974026" abs_y="364.090909" abs_pivot_x="0" abs_pivot_y="1" abs_angle="0" abs_scale_x="1" abs_scale_y="1" abs_a="1" timeline="2" key="0" z_index="3"/>
                     <object_ref id="4" name="wilson-2_000" folder="1" file="2" abs_x="371.97403" abs_y="368.58442" abs_pivot_x="0" abs_pivot_y="1" abs_angle="0" abs_scale_x="1" abs_scale_y="1" abs_a="1" timeline="5" key="0" z_index="4"/>
@@ -22,12 +22,12 @@
             </mainline>
             <timeline id="0" name="swap_body">
                 <key id="0" spin="0">
-                    <object folder="0" file="0" x="181.649573" y="74.101462" angle="0"/>
+                    <object folder="0" file="0" x="229.993919" y="47.182697" angle="0"/>
                 </key>
             </timeline>
             <timeline id="1" name="swap_object">
                 <key id="0" spin="0">
-                    <object folder="0" file="0" x="-278.041957" y="103.273261" angle="16.563897" scale_x="0.948755" scale_y="0.948755"/>
+                    <object folder="0" file="0" x="-266.458957" y="97.144414" angle="16.563897" scale_x="0.948755" scale_y="0.948755"/>
                 </key>
             </timeline>
             <timeline id="2" name="wilson-0">
