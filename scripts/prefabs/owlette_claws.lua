@@ -8,8 +8,8 @@ local assets =
 
 local ATTACK_PERIOD = 0.4
 local ATTACK_SPEED_BOOST = 0.9 -- claws_2: -15% period
-local BLEED_CHANCE_4 = 1.0
-local BLEED_CHANCE_5 = 1.0
+local BLEED_CHANCE_4 = 0.10
+local BLEED_CHANCE_5 = 0.15
 local BLEED_DAMAGE_4 = 10
 local BLEED_DAMAGE_5 = 15
 local BLEED_DURATION = 3
@@ -53,7 +53,7 @@ local function StartBleed(target, dps, duration)
     if not target or not target:IsValid() or not target.components.health then return end
 
     if target._owlette_bleedtask then
-        target._owlette_bleedtask:Cancel()
+        return
     end
 
     local ticks = duration

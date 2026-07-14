@@ -48,7 +48,7 @@ Assets = Assets or {}
 table.insert(Assets, Asset("ANIM", "anim/owlette_feather.zip"))
 table.insert(Assets, Asset("ATLAS", "images/inventoryimages/owlette_feather.xml"))
 table.insert(Assets, Asset("IMAGE", "images/inventoryimages/owlette_feather.tex"))
-GLOBAL.RegisterInventoryItemAtlas("images/inventoryimages/owlette_feather.xml", "owlette_feather")
+GLOBAL.RegisterInventoryItemAtlas("images/inventoryimages/owlette_feather.xml", "owlette_feather.tex")
 
 -- Claws item
 Assets = Assets or {}
@@ -62,14 +62,15 @@ local Ingredient = GLOBAL.Ingredient
 
 local STRINGS = GLOBAL.STRINGS
 
-AddRecipe2("owlette_claws",
+AddCharacterRecipe("owlette_claws",
     { Ingredient("flint", 2), Ingredient("twigs", 4), Ingredient("owlette_feather", 2) },
     { SCIENCE = 1 },
     {
         builder_tag = "owlette",
         atlas = "images/inventoryimages/owlette_claws.xml",
-        image = "owlette_claws",
+        image = "owlette_claws.tex",
         numtogive = 1,
+        description = "Острые совиные когти.",
     }
 )
 
@@ -124,9 +125,9 @@ STRINGS.SKILLTREE.OWLETTE = {
 	CLAWS_3_TITLE = "Когти отполированы",
 	CLAWS_3_DESC = "Базовый урон Talon Gauntlets увеличен до 42.",
 	CLAWS_4_TITLE = "Разрез",
-	CLAWS_4_DESC = "15% шанс наложить кровотечение (3 урона/сек на 3 сек).",
+	CLAWS_4_DESC = "10% шанс наложить кровотечение (10 урона/сек на 3 сек).",
 	CLAWS_5_TITLE = "Улучшенный разрез",
-	CLAWS_5_DESC = "25% шанс кровотечения (5 урона/сек на 3 сек).",
+	CLAWS_5_DESC = "15% шанс кровотечения (15 урона/сек на 3 сек).",
 
 	FLIGHT_1_TITLE = "Взмах крыльев",
 	FLIGHT_1_DESC = "Рывок на 3 тайла. Перезарядка 8 сек.",
