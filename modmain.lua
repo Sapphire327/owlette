@@ -61,6 +61,8 @@ local require = GLOBAL.require
 local Ingredient = GLOBAL.Ingredient
 
 local STRINGS = GLOBAL.STRINGS
+local lang = GetModConfigData("language")
+local L = require("owlette_strings")[lang]
 
 AddCharacterRecipe("owlette_claws",
     { Ingredient("flint", 2), Ingredient("twigs", 4), Ingredient("owlette_feather", 2) },
@@ -70,87 +72,34 @@ AddCharacterRecipe("owlette_claws",
         atlas = "images/inventoryimages/owlette_claws.xml",
         image = "owlette_claws.tex",
         numtogive = 1,
-        description = "Острые совиные когти.",
+        description = L.DESCRIBE_OWLETTE_CLAWS,
     }
 )
 
 -- The character select screen lines
-STRINGS.CHARACTER_TITLES.owlette = "A creature of the night, Owlette is strongest when the moon is high."
-STRINGS.CHARACTER_NAMES.owlette = "Owlette"
-STRINGS.CHARACTER_DESCRIPTIONS.owlette = "*Perk 1\n*Perk 2\n*Perk 3"
-STRINGS.CHARACTER_QUOTES.owlette = "\"Hoot\""
-STRINGS.CHARACTER_SURVIVABILITY.owlette = "Slim"
+STRINGS.CHARACTER_TITLES.owlette = L.CHARACTER_TITLES
+STRINGS.CHARACTER_NAMES.owlette = L.CHARACTER_NAMES
+STRINGS.CHARACTER_DESCRIPTIONS.owlette = L.CHARACTER_DESCRIPTIONS
+STRINGS.CHARACTER_QUOTES.owlette = L.CHARACTER_QUOTES
+STRINGS.CHARACTER_SURVIVABILITY.owlette = L.CHARACTER_SURVIVABILITY
 
 -- Custom speech strings
 STRINGS.CHARACTERS.OWLETTE = require "speech_owlette"
 
 -- Owl Feather strings
-STRINGS.NAMES.OWLETTE_FEATHER = "Owl Feather"
-STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_FEATHER = "A soft feather from Owlette."
+STRINGS.NAMES.OWLETTE_FEATHER = L.NAMES_OWLETTE_FEATHER
+STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_FEATHER = L.DESCRIBE_OWLETTE_FEATHER
 
 -- Claws strings
-STRINGS.NAMES.OWLETTE_CLAWS = "Когти"
-STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_CLAWS = "Острые совиные когти."
+STRINGS.NAMES.OWLETTE_CLAWS = L.NAMES_OWLETTE_CLAWS
+STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_CLAWS = L.DESCRIBE_OWLETTE_CLAWS
 
 -- The character's name as appears in-game 
-STRINGS.NAMES.OWLETTE = "Owlette"
-STRINGS.SKIN_NAMES.owlette_none = "Owlette"
+STRINGS.NAMES.OWLETTE = L.NAME_OWLETTE
+STRINGS.SKIN_NAMES.owlette_none = L.SKIN_OWLETTE_NONE
 
 -- Skill tree strings
-STRINGS.SKILLTREE.OWLETTE = {
-	HUNTING_1_TITLE = "Охота",
-	HUNTING_1_DESC = "занятые кроликом норы, будут подсвечены. Лучшая видимость следов коалослона",
-	HUNTING_2_TITLE = "Выманивание",
-	HUNTING_2_DESC = "Скребите когтями у норы, чтобы выманить кролика.",
-	HUNTING_3_TITLE = "Тихий полёт",
-	HUNTING_3_DESC = "Кролики и Коалослоны не слышат приближающейся опасности.",
-	HUNTING_4_TITLE = "Птицелов",
-	HUNTING_4_DESC = "Птицы не улетают при приближении.",
-	HUNTING_5_TITLE = "Двойная добыча",
-	HUNTING_5_DESC = "50% шанс получить вдвое больше лута с мелких существ.",
-
-	NIGHTVISION_1_TITLE = "Ночное преимущество",
-	NIGHTVISION_1_DESC = "Глаза совы не знают тьмы — Owlette видит каждый уголок даже в самую безлунную ночь.",
-	NIGHTVISION_2_TITLE = "Ясная ночь",
-	NIGHTVISION_2_DESC = "Радиус ночного зрения увеличен до 8 тайлов.",
-	NIGHTVISION_3_TITLE = "Все вижу",
-	NIGHTVISION_3_DESC = "Радиус ночного зрения увеличен до 10 тайлов.",
-	NIGHTVISION_4_TITLE = "Совиная зоркость",
-	NIGHTVISION_4_DESC = "Радиус ночного зрения увеличен до 12 тайлов.",
-
-	CLAWS_1_TITLE = "Когти наточены",
-	CLAWS_1_DESC = "Базовый урон Talon Gauntlets увеличен до 38.",
-	CLAWS_2_TITLE = "Хлёсткий удар",
-	CLAWS_2_DESC = "Скорость атаки когтями увеличена на 15%.",
-	CLAWS_3_TITLE = "Когти отполированы",
-	CLAWS_3_DESC = "Базовый урон Talon Gauntlets увеличен до 42.",
-	CLAWS_4_TITLE = "Разрез",
-	CLAWS_4_DESC = "10% шанс наложить кровотечение (10 урона/сек на 3 сек).",
-	CLAWS_5_TITLE = "Улучшенный разрез",
-	CLAWS_5_DESC = "15% шанс кровотечения (15 урона/сек на 3 сек).",
-
-	FLIGHT_1_TITLE = "Взмах крыльев",
-	FLIGHT_1_DESC = "Рывок на 3 тайла. Перезарядка 8 сек.",
-	FLIGHT_2_TITLE = "Быстрое крыло",
-	FLIGHT_2_DESC = "Перезарядка рывка снижена до 6 сек.",
-	FLIGHT_3_TITLE = "Планирование",
-	FLIGHT_3_DESC = "После рывка +15% к скорости на 3 сек.",
-	FLIGHT_4_TITLE = "Длинное крыло",
-	FLIGHT_4_DESC = "Дальность рывка увеличена до 5 тайлов.",
-	FLIGHT_5_TITLE = "Стремительное крыло",
-	FLIGHT_5_DESC = "Рывок на 40% быстрее. Дальность увеличена до 6 тайлов.",
-
-	FEATHERS_1_TITLE = "Густое оперение",
-	FEATHERS_1_DESC = "+30 к изоляции от холода.",
-	FEATHERS_2_TITLE = "Водоотталкивающие перья",
-	FEATHERS_2_DESC = "Скорость намокания снижена на 20%.",
-	FEATHERS_3_TITLE = "Пуховой подшёрсток",
-	FEATHERS_3_DESC = "+40 к изоляции от холода (всего +70).",
-	FEATHERS_4_TITLE = "Перьевой кокон",
-	FEATHERS_4_DESC = "Скорость высыхания увеличена на 25%.",
-	FEATHERS_5_TITLE = "Непробиваемые перья",
-	FEATHERS_5_DESC = "+15% врождённого сопротивления физическому урону.",
-}
+STRINGS.SKILLTREE.OWLETTE = L.SKILLTREE
 
 -- Skill tree registration
 Assets = Assets or {}
@@ -280,7 +229,7 @@ end
 local ACTIONS = GLOBAL.ACTIONS
 local STRINGS = GLOBAL.STRINGS
 
-STRINGS.ACTIONS.SCRATCH_BURROW = "Выманить"
+STRINGS.ACTIONS.SCRATCH_BURROW = L.SCRATCH_BURROW
 
 ACTIONS.SCRATCH_BURROW = AddAction("SCRATCH_BURROW", STRINGS.ACTIONS.SCRATCH_BURROW, function(act)
     local target = act.target
@@ -292,7 +241,7 @@ ACTIONS.SCRATCH_BURROW = AddAction("SCRATCH_BURROW", STRINGS.ACTIONS.SCRATCH_BUR
 
     if not spawner.child or not spawner.child:IsValid() then
         if doer.components.talker then
-            doer.components.talker:Say("The burrow is empty.")
+            doer.components.talker:Say(L.EMPTY_BURROW)
         end
         return false
     end

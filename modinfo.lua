@@ -29,4 +29,15 @@ server_filter_tags = {
 "character",
 }
 
---configuration_options = {}
+configuration_options = {
+    {
+        name = "language",
+        label = "Language / Язык",
+        hover = "Select the language for mod strings",
+        options = {
+            { description = "Русский", data = "ru" },
+            { description = "English", data = "en" },
+        },
+        default = "ru",
+    },
+}
