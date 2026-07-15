@@ -4,7 +4,7 @@ PrefabFiles = {
 	"tent",
 	"owlette_feather",
 	"owlette_claws",
-	"owlette_dash_fx",
+
 }
 
 Assets = {
@@ -452,116 +452,17 @@ AddStategraphPostInit("wilson", function(sg)
     end
 end)
 
--- Custom dash animation for Owlette
-local function GetLungeSuffix(inst)
-	local char_dir = inst.Transform:GetRotation()
-	local camera_rot = GLOBAL.TheCamera:GetHeadingTarget()
-	local relative_dir = ((char_dir + camera_rot) % 360 + 360) % 360
-	if relative_dir > 45 and relative_dir <= 135 then return "_up"
-	elseif relative_dir > 135 and relative_dir <= 225 then return ""
-	elseif relative_dir > 225 and relative_dir <= 315 then return "_down"
-	else return "" end
-end
-
-local function spawn_dash_fx(inst, suffix)
-    local fx = GLOBAL.SpawnPrefab("owlette_dash_fx")
-    fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
-    inst._dash_fx = fx
-    inst._dash_suffix = suffix
-end
-
-local function cleanup_dash(inst)
-    if inst._dash_cleanup_task then
-        inst._dash_cleanup_task:Cancel()
-        inst._dash_cleanup_task = nil
-    end
-    if inst._dash_fx then
-        inst._dash_fx:Remove()
-        inst._dash_fx = nil
-    end
-    inst.AnimState:SetMultColour(1, 1, 1, 1)
-    inst._is_dashing = nil
-end
-
 AddStategraphPostInit("wilson", function(sg)
-    local ls = sg.states["combat_lunge_start"]
-    if ls then
-        ls.onenter = function(inst)
-            inst.components.locomotor:Stop()
-            if inst:HasTag("owlette") then
-                local suffix = GetLungeSuffix(inst)
-                spawn_dash_fx(inst, suffix)
-                inst._dash_fx.AnimState:PlayAnimation("lunge_pre" .. suffix, false)
-                print("FX: played lunge_pre" .. tostring(suffix) .. " on " .. tostring(inst._dash_fx))
-                inst._dash_fx:Show()
-                inst.AnimState:SetMultColour(1, 1, 1, 0)
-                inst.AnimState:PlayAnimation("lunge_pre")
-                inst._is_dashing = true
-
-                if inst._dash_cleanup_task then
-                    inst._dash_cleanup_task:Cancel()
-                end
-                inst._dash_cleanup_task = inst:DoTaskInTime(1.5, function()
-                    if inst._is_dashing then
-                        cleanup_dash(inst)
-                    end
-                end)
-            else
-                inst.AnimState:PlayAnimation("lunge_pre")
-            end
-        end
-
-        ls.onexit = function(inst)
-            if inst:HasTag("owlette") and inst._is_dashing then
-                cleanup_dash(inst)
-            end
-        end
-
-        for i, handler in ipairs(ls.events) do
-            if handler.event == "animover" then
-                handler.fn = function(inst)
-                    if inst.AnimState:AnimDone() then
-                        if inst:HasTag("owlette") and inst._is_dashing then
-                            local suffix = inst._dash_suffix or ""
-                            if inst.AnimState:IsCurrentAnimation("lunge_pre") then
-                                inst.AnimState:PlayAnimation("lunge_lag")
-                                if inst._dash_fx then
-                                    inst._dash_fx.AnimState:PlayAnimation("lunge_lag" .. suffix)
-                                end
-                                inst:PerformBufferedAction()
-                            else
-                                cleanup_dash(inst)
-                                inst.sg:GoToState("idle")
-                            end
-                        else
-                            if inst.AnimState:IsCurrentAnimation("lunge_pre") then
-                                inst.AnimState:PlayAnimation("lunge_lag")
-                                inst:PerformBufferedAction()
-                            else
-                                inst.sg:GoToState("idle")
-                            end
-                        end
-                    end
-                end
-                break
-            end
-        end
-    end
-
     local l = sg.states["combat_lunge"]
     if l then
         local _onenter_lunge = l.onenter
         l.onenter = function(inst, data)
             if inst:HasTag("owlette") then
-                local suffix = inst._dash_suffix or ""
                 if data ~= nil and
                     data.targetpos ~= nil and
                     data.weapon ~= nil and
                     data.weapon.components.aoeweapon_lunge ~= nil and
                     inst.AnimState:IsCurrentAnimation("lunge_lag") then
-                    if inst._dash_fx then
-                        inst._dash_fx.AnimState:PlayAnimation("lunge_pst" .. suffix)
-                    end
                     inst.AnimState:PlayAnimation("lunge_pst")
                     inst.SoundEmitter:PlaySound("dontstarve/wilson/attack_weapon")
                     local pos = inst:GetPosition()
@@ -621,10 +522,6 @@ AddStategraphPostInit("wilson", function(sg)
                         end
                         inst.Physics:Teleport(x, 0, z)
 
-                        if inst._dash_fx then
-                            inst._dash_fx.Transform:SetPosition(x, 0, z)
-                        end
-
                         if not data.skipflash and inst.sg.currentstate == "combat_lunge" then
                             inst.components.bloomer:PushBloom("lunge", "shaders/anim.ksh", -2)
                             inst.components.colouradder:PushColour("lunge", 1, 1, 0, 0)
@@ -633,16 +530,9 @@ AddStategraphPostInit("wilson", function(sg)
                         return
                     end
                 end
-                cleanup_dash(inst)
                 inst.sg:GoToState("idle", true)
             else
                 _onenter_lunge(inst, data)
-            end
-        end
-
-        l.onexit = function(inst)
-            if inst:HasTag("owlette") and inst._is_dashing then
-                cleanup_dash(inst)
             end
         end
     end
