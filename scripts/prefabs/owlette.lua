@@ -122,6 +122,34 @@ local common_postinit = function(inst)
 		end
 	end)
 
+	-- Flight dash client events (visual range sync)
+	inst:ListenForEvent("onactivateskill_client", function(_, data)
+		if data.skill == "owlette_flight_4" then
+			if inst.components.aoetargeting ~= nil then
+				inst.components.aoetargeting:SetRange(15)
+			end
+		elseif data.skill == "owlette_flight_5" then
+			if inst.components.aoetargeting ~= nil then
+				inst.components.aoetargeting:SetRange(18)
+			end
+		end
+	end)
+	inst:ListenForEvent("ondeactivateskill_client", function(_, data)
+		if data.skill == "owlette_flight_4" then
+			if inst.components.aoetargeting ~= nil then
+				inst.components.aoetargeting:SetRange(9)
+			end
+		elseif data.skill == "owlette_flight_5" then
+			if inst.components.aoetargeting ~= nil then
+				if TheSkillTree:IsActivated("owlette_flight_4", "owlette") then
+					inst.components.aoetargeting:SetRange(15)
+				else
+	inst.components.aoetargeting:SetRange(9)
+				end
+			end
+		end
+	end)
+
 	-- Restore state on load
 	inst:DoTaskInTime(0, function()
 		update_nightvision(inst)
@@ -152,6 +180,71 @@ local master_postinit = function(inst)
 	
 	-- Hunger rate (optional)
 	inst.components.hunger.hungerrate = 1 * TUNING.WILSON_HUNGER_RATE
+
+	-- Flight dash
+	local function Owlette_ReticuleTargetFn()
+		local range = inst.components.aoetargeting:GetRange()
+		return Vector3(inst.entity:LocalToWorldSpace(range, 0, 0))
+	end
+
+	local function Owlette_ReticuleMouseTargetFn(inst, mousepos)
+		if mousepos ~= nil then
+			local x, y, z = inst.Transform:GetWorldPosition()
+			local dx = mousepos.x - x
+			local dz = mousepos.z - z
+			local l = dx * dx + dz * dz
+			if l <= 0 then
+				return inst.components.reticule.targetpos
+			end
+			local range = inst.components.aoetargeting:GetRange()
+			l = range / math.sqrt(l)
+			return Vector3(x + dx * l, 0, z + dz * l)
+		end
+	end
+
+	local function Owlette_ReticuleUpdatePositionFn(inst, pos, reticule, ease, smoothing, dt)
+		local x, y, z = inst.Transform:GetWorldPosition()
+		reticule.Transform:SetPosition(x, 0, z)
+		local rot = -math.atan2(pos.z - z, pos.x - x) / DEGREES
+		if ease and dt ~= nil then
+			local rot0 = reticule.Transform:GetRotation()
+			local drot = rot - rot0
+			rot = Lerp((drot > 180 and rot0 + 360) or (drot < -180 and rot0 - 360) or rot0, rot, dt * smoothing)
+		end
+		reticule.Transform:SetRotation(rot)
+	end
+
+	local function DoFlightDash(inst, doer, pos)
+		if inst._flight_dash_next_time and GetTime() < inst._flight_dash_next_time then
+			return false
+		end
+		local cooldown = inst._flight_dash_cooldown or 8
+		inst._flight_dash_next_time = GetTime() + cooldown
+		doer:PushEvent("combat_lunge", { targetpos = pos, weapon = inst })
+	end
+
+	inst:AddComponent("aoetargeting")
+	inst.components.aoetargeting:SetEnabled(true)
+	inst.components.aoetargeting:SetRange(9)
+	inst.components.aoetargeting:SetAllowRiding(false)
+	inst.components.aoetargeting.reticule.reticuleprefab = "reticuleline"
+	inst.components.aoetargeting.reticule.pingprefab = "reticulelineping"
+	inst.components.aoetargeting.reticule.mouseenabled = true
+	inst.components.aoetargeting.reticule.ease = true
+	inst.components.aoetargeting.reticule.targetfn = Owlette_ReticuleTargetFn
+	inst.components.aoetargeting.reticule.mousetargetfn = Owlette_ReticuleMouseTargetFn
+	inst.components.aoetargeting.reticule.updatepositionfn = Owlette_ReticuleUpdatePositionFn
+
+	inst:AddComponent("aoespell")
+	inst.components.aoespell:SetSpellFn(DoFlightDash)
+
+	inst:AddComponent("aoeweapon_lunge")
+	inst.components.aoeweapon_lunge:SetDamage(0)
+	inst.components.aoeweapon_lunge:SetSideRange(0)
+	inst.components.aoeweapon_lunge:SetTags("__owlette_dash_nohit__")
+
+	inst._flight_dash_cooldown = 8
+	inst._flight_dash_next_time = 0
 
 	inst.OnLoad = onload
     inst.OnNewSpawn = onload

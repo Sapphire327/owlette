@@ -18,7 +18,6 @@ local function IsFacingAway(owner)
     local char_dir = owner.Transform:GetRotation()
     local camera_rot = TheCamera:GetHeadingTarget()
     local relative_dir = ((char_dir + camera_rot) % 360 + 360) % 360
-    print("[claws] rot=" .. string.format("%.1f", relative_dir))
     return relative_dir >= 135 and relative_dir<=225
 end
 

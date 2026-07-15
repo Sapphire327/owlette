@@ -4,6 +4,7 @@ PrefabFiles = {
 	"tent",
 	"owlette_feather",
 	"owlette_claws",
+	"owlette_dash_fx",
 }
 
 Assets = {
@@ -56,6 +57,9 @@ table.insert(Assets, Asset("ANIM", "anim/claws.zip"))
 table.insert(Assets, Asset("ATLAS", "images/inventoryimages/owlette_claws.xml"))
 table.insert(Assets, Asset("IMAGE", "images/inventoryimages/owlette_claws.tex"))
 GLOBAL.RegisterInventoryItemAtlas("images/inventoryimages/owlette_claws.xml", "owlette_claws.tex")
+
+-- Dash animation bank
+table.insert(Assets, Asset("ANIM", "anim/owlette_dash.zip"))
 
 local require = GLOBAL.require
 local Ingredient = GLOBAL.Ingredient
@@ -270,6 +274,149 @@ AddComponentAction("SCENE", "spawner", function(inst, doer, actions, right)
     end
 end)
 
+-- Flight dash - character-hosted AOE targeting
+-- These patches allow the player entity to host aoetargeting/aoespell for a RMB dash line
+AddComponentPostInit("playercontroller", function(self)
+	local _HasAOETargeting = self.HasAOETargeting
+	self.HasAOETargeting = function(self)
+		if _HasAOETargeting(self) then return true end
+		local at = self.inst.components.aoetargeting
+		if at ~= nil and at:IsEnabled() then
+			if at.allowriding then return true end
+			local rider = self.inst.replica.rider
+			return rider == nil or not rider:IsRiding()
+		end
+		return false
+	end
+
+	local _TryAOETargeting = self.TryAOETargeting
+	self.TryAOETargeting = function(self)
+		if _TryAOETargeting(self) then
+			return true
+		end
+		local at = self.inst.components.aoetargeting
+		if at ~= nil and at:IsEnabled() then
+			if not at.allowriding then
+				local rider = self.inst.replica.rider
+				if rider ~= nil and rider:IsRiding() then return false end
+			end
+			if self.inst._flight_dash_next_time ~= nil and GLOBAL.GetTime() < self.inst._flight_dash_next_time then
+				return false
+			end
+			at:StartTargeting()
+			return true
+		end
+		return false
+	end
+
+	local _GetActiveSpellBook = self.GetActiveSpellBook
+	self.GetActiveSpellBook = function(self)
+		local ret = _GetActiveSpellBook(self)
+		if ret ~= nil then return ret end
+		if self.reticule ~= nil and self.reticule.inst == self.inst and self.inst.components.aoespell ~= nil then
+			return self.inst
+		end
+		return nil
+	end
+
+	local _GetGroundUseAction = self.GetGroundUseAction
+	self.GetGroundUseAction = function(self, position, spellbook)
+		local lmb, rmb = _GetGroundUseAction(self, position, spellbook)
+		if lmb ~= nil or rmb ~= nil then
+			return lmb, rmb
+		end
+		local isaoetargeting = position == nil and self:IsAOETargeting()
+		if isaoetargeting and self.inst.components.aoetargeting ~= nil then
+			local pos = self:GetAOETargetingPos() or self.inst:GetPosition()
+			if CanEntitySeePoint(self.inst, pos:Get()) then
+				rmb = self.inst.components.playeractionpicker:GetPointActions(pos, self.inst, true, nil)[1]
+				if rmb ~= nil then
+					if rmb.action == ACTIONS.TERRAFORM then
+						rmb.distance = 2
+					end
+					return nil, rmb
+				end
+			end
+		end
+		return lmb, rmb
+	end
+
+	-- Fix OnLeftClick: guard against nil spellbook component on player-hosted AOEs
+	local _OnLeftClick = self.OnLeftClick
+	self.OnLeftClick = function(self, down)
+		local needs_stub = self.reticule ~= nil
+			and self:GetActiveSpellBook() == self.inst
+			and self.inst.components.spellbook == nil
+
+		if needs_stub then
+			self.inst.components.spellbook = { GetSelectedSpell = function() return nil end }
+		end
+
+		local result = _OnLeftClick(self, down)
+
+		if needs_stub then
+			self.inst.components.spellbook = nil
+		end
+
+		return result
+	end
+
+	-- Fix OnRemoteLeftClick: handle player as spellbook for player-hosted AOEs
+	local _OnRemoteLeftClick = self.OnRemoteLeftClick
+	self.OnRemoteLeftClick = function(self, actioncode, position, target, isreleased, controlmodscode, noforce, mod_name, spellbook, spell_id)
+		if spellbook ~= nil and spellbook == self.inst and spellbook.components.aoespell ~= nil then
+			-- Player-hosted AOE spellbook
+			if self.ismastersim and self:IsEnabled() and self.handler == nil then
+				self.inst.components.combat:SetTarget(nil)
+				self.remote_controls[CONTROL_PRIMARY] = 0
+
+				self:DecodeControlMods(controlmodscode)
+				SetClientRequestedAction(actioncode, mod_name)
+				local lmb, rmb = self.inst.components.playeractionpicker:DoGetMouseActions(position, target, spellbook)
+				ClearClientRequestedAction()
+				if isreleased then
+					self.remote_controls[CONTROL_PRIMARY] = nil
+				end
+				self:ClearControlMods()
+
+				lmb = (lmb ~= nil and lmb.action.code == actioncode and lmb)
+					or (rmb ~= nil and rmb.action.code == actioncode and rmb)
+					or nil
+
+				if lmb ~= nil then
+					if lmb.action.canforce and not noforce then
+						lmb:SetActionPoint(self:GetRemotePredictPosition() or self.inst:GetPosition())
+						lmb.forced = true
+					end
+					self:DoAction(lmb, spellbook)
+				end
+			end
+			return
+		end
+		return _OnRemoteLeftClick(self, actioncode, position, target, isreleased, controlmodscode, noforce, mod_name, spellbook, spell_id)
+	end
+end)
+
+AddComponentPostInit("aoetargeting", function(self)
+	local _StartTargeting = self.StartTargeting
+	self.StartTargeting = function(self)
+		if self.inst.components.reticule == nil then
+			local pc = self.inst.components.playercontroller
+			if pc ~= nil then
+				if self.inst:HasTag("player") then
+					self.inst:AddComponent("reticule")
+					for k, v in pairs(self.reticule) do
+						self.inst.components.reticule[k] = v
+					end
+					pc:RefreshReticule(self.inst)
+				else
+					_StartTargeting(self)
+				end
+			end
+		end
+	end
+end)
+
 -- Claws attack speed boost (works for any character equipping owlette_claws)
 AddStategraphPostInit("wilson", function(sg)
     local _attack = sg.states["attack"]
@@ -301,6 +448,202 @@ AddStategraphPostInit("wilson", function(sg)
         end
         if _onexit then
             return _onexit(inst, ...)
+        end
+    end
+end)
+
+-- Custom dash animation for Owlette
+local function GetLungeSuffix(inst)
+	local char_dir = inst.Transform:GetRotation()
+	local camera_rot = GLOBAL.TheCamera:GetHeadingTarget()
+	local relative_dir = ((char_dir + camera_rot) % 360 + 360) % 360
+	if relative_dir > 45 and relative_dir <= 135 then return "_up"
+	elseif relative_dir > 135 and relative_dir <= 225 then return ""
+	elseif relative_dir > 225 and relative_dir <= 315 then return "_down"
+	else return "" end
+end
+
+local function spawn_dash_fx(inst, suffix)
+    local fx = GLOBAL.SpawnPrefab("owlette_dash_fx")
+    fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    inst._dash_fx = fx
+    inst._dash_suffix = suffix
+end
+
+local function cleanup_dash(inst)
+    if inst._dash_cleanup_task then
+        inst._dash_cleanup_task:Cancel()
+        inst._dash_cleanup_task = nil
+    end
+    if inst._dash_fx then
+        inst._dash_fx:Remove()
+        inst._dash_fx = nil
+    end
+    inst.AnimState:SetMultColour(1, 1, 1, 1)
+    inst._is_dashing = nil
+end
+
+AddStategraphPostInit("wilson", function(sg)
+    local ls = sg.states["combat_lunge_start"]
+    if ls then
+        ls.onenter = function(inst)
+            inst.components.locomotor:Stop()
+            if inst:HasTag("owlette") then
+                local suffix = GetLungeSuffix(inst)
+                spawn_dash_fx(inst, suffix)
+                inst._dash_fx.AnimState:PlayAnimation("lunge_pre" .. suffix, false)
+                print("FX: played lunge_pre" .. tostring(suffix) .. " on " .. tostring(inst._dash_fx))
+                inst._dash_fx:Show()
+                inst.AnimState:SetMultColour(1, 1, 1, 0)
+                inst.AnimState:PlayAnimation("lunge_pre")
+                inst._is_dashing = true
+
+                if inst._dash_cleanup_task then
+                    inst._dash_cleanup_task:Cancel()
+                end
+                inst._dash_cleanup_task = inst:DoTaskInTime(1.5, function()
+                    if inst._is_dashing then
+                        cleanup_dash(inst)
+                    end
+                end)
+            else
+                inst.AnimState:PlayAnimation("lunge_pre")
+            end
+        end
+
+        ls.onexit = function(inst)
+            if inst:HasTag("owlette") and inst._is_dashing then
+                cleanup_dash(inst)
+            end
+        end
+
+        for i, handler in ipairs(ls.events) do
+            if handler.event == "animover" then
+                handler.fn = function(inst)
+                    if inst.AnimState:AnimDone() then
+                        if inst:HasTag("owlette") and inst._is_dashing then
+                            local suffix = inst._dash_suffix or ""
+                            if inst.AnimState:IsCurrentAnimation("lunge_pre") then
+                                inst.AnimState:PlayAnimation("lunge_lag")
+                                if inst._dash_fx then
+                                    inst._dash_fx.AnimState:PlayAnimation("lunge_lag" .. suffix)
+                                end
+                                inst:PerformBufferedAction()
+                            else
+                                cleanup_dash(inst)
+                                inst.sg:GoToState("idle")
+                            end
+                        else
+                            if inst.AnimState:IsCurrentAnimation("lunge_pre") then
+                                inst.AnimState:PlayAnimation("lunge_lag")
+                                inst:PerformBufferedAction()
+                            else
+                                inst.sg:GoToState("idle")
+                            end
+                        end
+                    end
+                end
+                break
+            end
+        end
+    end
+
+    local l = sg.states["combat_lunge"]
+    if l then
+        local _onenter_lunge = l.onenter
+        l.onenter = function(inst, data)
+            if inst:HasTag("owlette") then
+                local suffix = inst._dash_suffix or ""
+                if data ~= nil and
+                    data.targetpos ~= nil and
+                    data.weapon ~= nil and
+                    data.weapon.components.aoeweapon_lunge ~= nil and
+                    inst.AnimState:IsCurrentAnimation("lunge_lag") then
+                    if inst._dash_fx then
+                        inst._dash_fx.AnimState:PlayAnimation("lunge_pst" .. suffix)
+                    end
+                    inst.AnimState:PlayAnimation("lunge_pst")
+                    inst.SoundEmitter:PlaySound("dontstarve/wilson/attack_weapon")
+                    local pos = inst:GetPosition()
+                    local dir
+                    if pos.x ~= data.targetpos.x or pos.z ~= data.targetpos.z then
+                        dir = inst:GetAngleToPoint(data.targetpos)
+                        inst.Transform:SetRotation(dir)
+                    end
+                    if data.weapon.components.aoeweapon_lunge:DoLunge(inst, pos, data.targetpos) then
+                        inst.SoundEmitter:PlaySound(data.weapon.components.aoeweapon_lunge.sound or "dontstarve/common/lava_arena/fireball")
+
+                        local x, z = data.targetpos.x, data.targetpos.z
+                        if dir then
+                            local theta = dir * (math.pi / 180)
+                            local cos_theta = math.cos(theta)
+                            local sin_theta = math.sin(theta)
+                            local x1, z1
+                            local _ispassableatpoint, iscustom = GLOBAL.GetActionPassableTestFnAt(pos:Get())
+                            if not _ispassableatpoint(x, 0, z) then
+                                if _ispassableatpoint(x + 0.1 * cos_theta, 0, z - 0.1 * sin_theta) then
+                                    x1 = x + 0.5 * cos_theta
+                                    z1 = z - 0.5 * sin_theta
+                                elseif _ispassableatpoint(x - 0.1 * cos_theta, 0, z + 0.1 * sin_theta) then
+                                    x1 = x - 0.5 * cos_theta
+                                    z1 = z + 0.5 * sin_theta
+                                elseif iscustom then
+                                    x1, z1 = pos.x, pos.z
+                                    local dist = math.sqrt(GLOBAL.distsq(pos.x, pos.z, x, z))
+                                    while dist > 0.5 do
+                                        dist = dist - 0.5
+                                        if _ispassableatpoint(pos.x + (dist + 0.1) * cos_theta, 0, pos.z - (dist + 0.1) * sin_theta) then
+                                            x1 = pos.x + dist * cos_theta
+                                            z1 = pos.z - dist * sin_theta
+                                            break
+                                        end
+                                    end
+                                end
+                            else
+                                if not _ispassableatpoint(x + 0.1 * cos_theta, 0, z - 0.1 * sin_theta) then
+                                    x1 = x - 0.4 * cos_theta
+                                    z1 = z + 0.4 * sin_theta
+                                elseif not _ispassableatpoint(x - 0.1 * cos_theta, 0, z + 0.1 * sin_theta) then
+                                    x1 = x + 0.4 * cos_theta
+                                    z1 = z - 0.4 * sin_theta
+                                end
+                            end
+
+                            if x1 and _ispassableatpoint(x1, 0, z1) then
+                                x, z = x1, z1
+                            end
+                        end
+
+                        local mass = inst.Physics:GetMass()
+                        if mass > 0 then
+                            inst.sg.statemem.restoremass = mass
+                            inst.Physics:SetMass(mass + 1)
+                        end
+                        inst.Physics:Teleport(x, 0, z)
+
+                        if inst._dash_fx then
+                            inst._dash_fx.Transform:SetPosition(x, 0, z)
+                        end
+
+                        if not data.skipflash and inst.sg.currentstate == "combat_lunge" then
+                            inst.components.bloomer:PushBloom("lunge", "shaders/anim.ksh", -2)
+                            inst.components.colouradder:PushColour("lunge", 1, 1, 0, 0)
+                            inst.sg.statemem.flash = 1
+                        end
+                        return
+                    end
+                end
+                cleanup_dash(inst)
+                inst.sg:GoToState("idle", true)
+            else
+                _onenter_lunge(inst, data)
+            end
+        end
+
+        l.onexit = function(inst)
+            if inst:HasTag("owlette") and inst._is_dashing then
+                cleanup_dash(inst)
+            end
         end
     end
 end)

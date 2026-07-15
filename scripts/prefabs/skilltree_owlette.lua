@@ -264,8 +264,19 @@ local SKILLS = {
         group = "flight",
         tags = {"flight"},
         connects = {"owlette_flight_2"},
-        onactivate = function(inst, fromload) end,
-        ondeactivate = function(inst, fromload) end,
+        onactivate = function(inst, fromload)
+            inst:AddTag("aoeweapon_lunge")
+            if not TheWorld.ismastersim then return end
+            inst.components.aoetargeting:SetEnabled(true)
+        end,
+        ondeactivate = function(inst, fromload)
+            inst:RemoveTag("aoeweapon_lunge")
+            if not TheWorld.ismastersim then return end
+            inst.components.aoetargeting:SetEnabled(false)
+            if inst.components.playercontroller ~= nil then
+                inst.components.playercontroller:CancelAOETargeting()
+            end
+        end,
     },
     owlette_flight_2 = {
         title = STRINGS.SKILLTREE.OWLETTE.FLIGHT_2_TITLE,
@@ -274,8 +285,14 @@ local SKILLS = {
         group = "flight",
         tags = {"flight"},
         connects = {"owlette_flight_3"},
-        onactivate = function(inst, fromload) end,
-        ondeactivate = function(inst, fromload) end,
+        onactivate = function(inst, fromload)
+            if not TheWorld.ismastersim then return end
+            inst._flight_dash_cooldown = 6
+        end,
+        ondeactivate = function(inst, fromload)
+            if not TheWorld.ismastersim then return end
+            inst._flight_dash_cooldown = 8
+        end,
     },
     owlette_flight_3 = {
         title = STRINGS.SKILLTREE.OWLETTE.FLIGHT_3_TITLE,
@@ -284,8 +301,26 @@ local SKILLS = {
         group = "flight",
         tags = {"flight"},
         connects = {"owlette_flight_4"},
-        onactivate = function(inst, fromload) end,
-        ondeactivate = function(inst, fromload) end,
+        onactivate = function(inst, fromload)
+            if not TheWorld.ismastersim then return end
+            inst.components.aoeweapon_lunge.onlungedfn = function(weapon, doer, startingpos, targetpos)
+                if doer:IsValid() and doer.components.locomotor ~= nil then
+                    doer.components.locomotor:SetExternalSpeedMultiplier(doer, "owlette_flight_speed", 1.15)
+                    doer:DoTaskInTime(3, function()
+                        if doer:IsValid() and doer.components.locomotor ~= nil then
+                            doer.components.locomotor:RemoveExternalSpeedMultiplier(doer, "owlette_flight_speed")
+                        end
+                    end)
+                end
+            end
+        end,
+        ondeactivate = function(inst, fromload)
+            if not TheWorld.ismastersim then return end
+            inst.components.aoeweapon_lunge.onlungedfn = nil
+            if inst:IsValid() and inst.components.locomotor ~= nil then
+                inst.components.locomotor:RemoveExternalSpeedMultiplier(inst, "owlette_flight_speed")
+            end
+        end,
     },
     owlette_flight_4 = {
         title = STRINGS.SKILLTREE.OWLETTE.FLIGHT_4_TITLE,
@@ -294,8 +329,14 @@ local SKILLS = {
         group = "flight",
         tags = {"flight"},
         connects = {"owlette_flight_5"},
-        onactivate = function(inst, fromload) end,
-        ondeactivate = function(inst, fromload) end,
+        onactivate = function(inst, fromload)
+            if not TheWorld.ismastersim then return end
+            inst.components.aoetargeting:SetRange(15)
+        end,
+        ondeactivate = function(inst, fromload)
+            if not TheWorld.ismastersim then return end
+            inst.components.aoetargeting:SetRange(9)
+        end,
     },
     owlette_flight_5 = {
         title = STRINGS.SKILLTREE.OWLETTE.FLIGHT_5_TITLE,
@@ -303,8 +344,18 @@ local SKILLS = {
         pos = {200, 170},
         group = "flight",
         tags = {"flight"},
-        onactivate = function(inst, fromload) end,
-        ondeactivate = function(inst, fromload) end,
+        onactivate = function(inst, fromload)
+            if not TheWorld.ismastersim then return end
+            inst.components.aoetargeting:SetRange(18)
+        end,
+        ondeactivate = function(inst, fromload)
+            if not TheWorld.ismastersim then return end
+            if TheSkillTree:IsActivated("owlette_flight_4", "owlette") then
+                inst.components.aoetargeting:SetRange(15)
+            else
+                inst.components.aoetargeting:SetRange(9)
+            end
+        end,
     },
 
     -- 🌡️ FEATHERS BRANCH
