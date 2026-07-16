@@ -224,8 +224,8 @@ for _, prefab in ipairs(SMALL_CREATURES) do
                 end
             end
             return result
-        end
-    end)
+    end
+end)
 end
 
 -- Skill: Выманивание (Luring) - scratch burrows to flush out rabbits/moles
@@ -261,8 +261,9 @@ ACTIONS.SCRATCH_BURROW = AddAction("SCRATCH_BURROW", STRINGS.ACTIONS.SCRATCH_BUR
     child:DoTaskInTime(3, function()
         if child:IsValid() and child.components.locomotor then
             child.components.locomotor:Stop()
-        end
-    end)
+    end
+end)
+
     return true
 end)
 

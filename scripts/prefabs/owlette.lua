@@ -154,6 +154,39 @@ local common_postinit = function(inst)
 	inst:DoTaskInTime(0, function()
 		update_nightvision(inst)
 	end)
+
+	-- Cooldown HUD widget (client-side, only for Owlette)
+	inst:DoTaskInTime(1, function()
+		if not inst:IsValid() then return end
+		if not inst:HasTag("owlette") then return end
+		if not inst.HUD or not inst.HUD.controls then return end
+
+		local Text = require("widgets/text")
+		if not Text then return end
+
+		inst._cd_text = inst.HUD.controls:AddChild(Text(NEWFONT_OUTLINE, 35, ""))
+		inst._cd_text:SetPosition(150, -80, 0)
+		inst._cd_text:SetHAnchor(ANCHOR_LEFT)
+		inst._cd_text:SetVAnchor(ANCHOR_TOP)
+		inst._cd_text:SetClickable(false)
+		inst._cd_text:Hide()
+
+		inst:DoPeriodicTask(0.3, function()
+			if not inst:IsValid() or not inst._cd_text then return end
+			local pc = inst.player_classified
+			if not pc then return end
+			local am = pc.actionmeter
+			if not am then return end
+			local val = am:value()
+			if val and val > 0 then
+				inst._cd_text:SetString(tostring(math.ceil(val / 10)) .. "с")
+				inst._cd_text:Show()
+				inst._cd_text:SetColour(1, 0.8, 0, 1)
+			else
+				inst._cd_text:Hide()
+			end
+		end)
+	end)
 end
 
 -- This initializes for the server only. Components are added here.
@@ -220,11 +253,42 @@ local master_postinit = function(inst)
 		end
 		local cooldown = inst._flight_dash_cooldown or 8
 		inst._flight_dash_next_time = GetTime() + cooldown
+		-- Cooldown indicator (actionmeter for HUD text)
+		if doer._dash_cd_meter then doer._dash_cd_meter:Cancel() end
+		if doer._dash_cd_clear then doer._dash_cd_clear:Cancel() end
+		local max_meter = math.min(255, math.floor(cooldown * 10 + 0.5))
+		if doer.player_classified then
+			doer.player_classified.actionmetertime:set(max_meter)
+			doer.player_classified.actionmeter:set(max_meter)
+		end
+		doer._dash_cd_meter = doer:DoPeriodicTask(0.1, function()
+			if not doer:IsValid() then return end
+			if not doer.player_classified then return end
+			local remaining = inst._flight_dash_next_time - GetTime()
+			local val = math.max(0, math.min(255, math.floor(remaining * 10)))
+			doer.player_classified.actionmeter:set(val)
+			if val <= 0 then
+				if doer._dash_cd_meter then
+					doer._dash_cd_meter:Cancel()
+					doer._dash_cd_meter = nil
+				end
+			end
+		end)
+		doer._dash_cd_clear = doer:DoTaskInTime(cooldown, function()
+			if doer:IsValid() and doer.player_classified then
+				doer.player_classified.actionmeter:set(0)
+			end
+			if doer._dash_cd_meter then
+				doer._dash_cd_meter:Cancel()
+				doer._dash_cd_meter = nil
+			end
+			doer._dash_cd_clear = nil
+		end)
 		doer:PushEvent("combat_lunge", { targetpos = pos, weapon = inst })
 	end
 
 	inst:AddComponent("aoetargeting")
-	inst.components.aoetargeting:SetEnabled(true)
+	inst.components.aoetargeting:SetEnabled(false)
 	inst.components.aoetargeting:SetRange(9)
 	inst.components.aoetargeting:SetAllowRiding(false)
 	inst.components.aoetargeting.reticule.reticuleprefab = "reticuleline"
