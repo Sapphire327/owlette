@@ -499,15 +499,15 @@ AddStategraphPostInit("wilson", function(sg)
     local l = sg.states["combat_lunge"]
     if l then
         local _onenter_lunge = l.onenter
+        local _onexit_lunge = l.onexit
         l.onenter = function(inst, data)
             if inst:HasTag("owlette") then
                 if data ~= nil and
                     data.targetpos ~= nil and
                     data.weapon ~= nil and
-                    data.weapon.components.aoeweapon_lunge ~= nil and
-inst.AnimState:IsCurrentAnimation("lunge_pre") then
+                    data.weapon.components.aoeweapon_lunge ~= nil then
                     inst.AnimState:SetBank("owlette")
-                    inst.AnimState:PlayAnimation("dash_loop")
+                    inst.AnimState:PlayAnimation("lunge_pst")
                     inst.SoundEmitter:PlaySound("dontstarve/wilson/attack_weapon")
                     local pos = inst:GetPosition()
                     local dir
@@ -577,6 +577,14 @@ inst.AnimState:IsCurrentAnimation("lunge_pre") then
                 inst.sg:GoToState("idle", true)
             else
                 _onenter_lunge(inst, data)
+            end
+        end
+        l.onexit = function(inst, ...)
+            if inst:HasTag("owlette") then
+                inst.AnimState:SetBank("wilson")
+            end
+            if _onexit_lunge then
+                _onexit_lunge(inst, ...)
             end
         end
     end
