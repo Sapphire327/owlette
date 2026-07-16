@@ -460,6 +460,9 @@ AddStategraphPostInit("wilson", function(sg)
                 inst.components.locomotor:Stop()
                 inst.AnimState:SetBank("owlette")
                 inst.AnimState:PlayAnimation("lunge_pre")
+                local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 4 or 1
+                inst.AnimState:SetDeltaTimeMultiplier(speed)
+                inst.sg.statemem.owlette_dash_speed = speed
             else
                 _onenter_s(inst, ...)
             end
@@ -467,6 +470,7 @@ AddStategraphPostInit("wilson", function(sg)
         local _onexit_s = s.onexit
         s.onexit = function(inst, ...)
             if inst:HasTag("owlette") then
+                inst.AnimState:SetDeltaTimeMultiplier(1)
                 inst.AnimState:SetBank("wilson")
             end
             if _onexit_s then
@@ -508,6 +512,9 @@ AddStategraphPostInit("wilson", function(sg)
                     data.weapon.components.aoeweapon_lunge ~= nil then
                     inst.AnimState:SetBank("owlette")
                     inst.AnimState:PlayAnimation("lunge_pst")
+                    local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 4 or 1
+                    inst.AnimState:SetDeltaTimeMultiplier(speed)
+                    inst.sg.statemem.owlette_dash_speed = speed
                     inst.SoundEmitter:PlaySound("dontstarve/wilson/attack_weapon")
                     local pos = inst:GetPosition()
                     local dir
@@ -581,6 +588,7 @@ AddStategraphPostInit("wilson", function(sg)
         end
         l.onexit = function(inst, ...)
             if inst:HasTag("owlette") then
+                inst.AnimState:SetDeltaTimeMultiplier(1)
                 inst.AnimState:SetBank("wilson")
             end
             if _onexit_lunge then
