@@ -165,8 +165,8 @@ local common_postinit = function(inst)
 		if not UIAnim then return end
 
 		inst._cd_ring = inst.HUD.controls:AddChild(UIAnim())
-		inst._cd_ring:SetPosition(150, -80, 0)
-		inst._cd_ring:SetHAnchor(ANCHOR_LEFT)
+		inst._cd_ring:SetPosition(-170, -110, 0)
+		inst._cd_ring:SetHAnchor(ANCHOR_RIGHT)
 		inst._cd_ring:SetVAnchor(ANCHOR_TOP)
 		inst._cd_ring:SetClickable(false)
 		inst._cd_ring:SetScale(0.5)
@@ -176,18 +176,31 @@ local common_postinit = function(inst)
 		inst._cd_ring:GetAnimState():SetMultColour(1, 0.55, 0.3, 1)
 		inst._cd_ring:Hide()
 
-		inst:DoPeriodicTask(0.3, function()
+		inst:DoPeriodicTask(0.05, function()
 			if not inst:IsValid() or not inst._cd_ring then return end
 			local pc = inst.player_classified
 			if not pc then return end
 			local am = pc.actionmeter
 			local amt = pc.actionmetertime
 			if not am or not amt then return end
-			local val = am:value()
+			local server_val = am:value()
 			local max_val = amt:value()
-			if val and max_val and val > 0 and max_val > 0 then
-				inst._cd_ring:GetAnimState():SetPercent("progress", val / max_val)
-				inst._cd_ring:Show()
+
+			if max_val and max_val > 0 then
+				if server_val > 0 then
+					if server_val ~= inst._cd_last_val then
+						inst._cd_last_val = server_val
+						inst._cd_last_time = GetTime()
+					end
+					local elapsed = GetTime() - inst._cd_last_time
+					local smooth_val = math.max(0, inst._cd_last_val - elapsed * 10)
+					inst._cd_ring:GetAnimState():SetPercent("progress", smooth_val / max_val)
+					inst._cd_ring:Show()
+				else
+					inst._cd_ring:Hide()
+					inst._cd_last_val = nil
+					inst._cd_last_time = nil
+				end
 			else
 				inst._cd_ring:Hide()
 			end
