@@ -161,29 +161,35 @@ local common_postinit = function(inst)
 		if not inst:HasTag("owlette") then return end
 		if not inst.HUD or not inst.HUD.controls then return end
 
-		local Text = require("widgets/text")
-		if not Text then return end
+		local UIAnim = require("widgets/uianim")
+		if not UIAnim then return end
 
-		inst._cd_text = inst.HUD.controls:AddChild(Text(NEWFONT_OUTLINE, 35, ""))
-		inst._cd_text:SetPosition(150, -80, 0)
-		inst._cd_text:SetHAnchor(ANCHOR_LEFT)
-		inst._cd_text:SetVAnchor(ANCHOR_TOP)
-		inst._cd_text:SetClickable(false)
-		inst._cd_text:Hide()
+		inst._cd_ring = inst.HUD.controls:AddChild(UIAnim())
+		inst._cd_ring:SetPosition(150, -80, 0)
+		inst._cd_ring:SetHAnchor(ANCHOR_LEFT)
+		inst._cd_ring:SetVAnchor(ANCHOR_TOP)
+		inst._cd_ring:SetClickable(false)
+		inst._cd_ring:SetScale(0.5)
+		inst._cd_ring:GetAnimState():SetBuild("ringmeter")
+		inst._cd_ring:GetAnimState():SetBank("ringmeter")
+		inst._cd_ring:GetAnimState():SetPercent("progress", 0)
+		inst._cd_ring:GetAnimState():SetMultColour(1, 0.55, 0.3, 1)
+		inst._cd_ring:Hide()
 
 		inst:DoPeriodicTask(0.3, function()
-			if not inst:IsValid() or not inst._cd_text then return end
+			if not inst:IsValid() or not inst._cd_ring then return end
 			local pc = inst.player_classified
 			if not pc then return end
 			local am = pc.actionmeter
-			if not am then return end
+			local amt = pc.actionmetertime
+			if not am or not amt then return end
 			local val = am:value()
-			if val and val > 0 then
-				inst._cd_text:SetString(tostring(math.ceil(val / 10)) .. "с")
-				inst._cd_text:Show()
-				inst._cd_text:SetColour(1, 0.8, 0, 1)
+			local max_val = amt:value()
+			if val and max_val and val > 0 and max_val > 0 then
+				inst._cd_ring:GetAnimState():SetPercent("progress", val / max_val)
+				inst._cd_ring:Show()
 			else
-				inst._cd_text:Hide()
+				inst._cd_ring:Hide()
 			end
 		end)
 	end)
