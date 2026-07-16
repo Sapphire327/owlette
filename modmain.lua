@@ -59,7 +59,6 @@ table.insert(Assets, Asset("IMAGE", "images/inventoryimages/owlette_claws.tex"))
 GLOBAL.RegisterInventoryItemAtlas("images/inventoryimages/owlette_claws.xml", "owlette_claws.tex")
 
 -- Dash animation bank
-table.insert(Assets, Asset("ANIM", "anim/owlette_dash.zip"))
 
 local require = GLOBAL.require
 local Ingredient = GLOBAL.Ingredient
@@ -453,6 +452,50 @@ AddStategraphPostInit("wilson", function(sg)
 end)
 
 AddStategraphPostInit("wilson", function(sg)
+    local s = sg.states["combat_lunge_start"]
+    if s then
+        local _onenter_s = s.onenter
+        s.onenter = function(inst, ...)
+            if inst:HasTag("owlette") then
+                inst.components.locomotor:Stop()
+                inst.AnimState:SetBank("owlette")
+                inst.AnimState:PlayAnimation("lunge_pre")
+            else
+                _onenter_s(inst, ...)
+            end
+        end
+        local _onexit_s = s.onexit
+        s.onexit = function(inst, ...)
+            if inst:HasTag("owlette") then
+                inst.AnimState:SetBank("wilson")
+            end
+            if _onexit_s then
+                _onexit_s(inst, ...)
+            end
+        end
+        for i, evt in ipairs(s.events) do
+            if evt.event == "animover" then
+                local _animover = evt.fn
+                evt.fn = function(inst)
+                    if inst:HasTag("owlette") then
+                        if inst.AnimState:AnimDone() then
+                            if inst.AnimState:IsCurrentAnimation("lunge_pre") then
+                                inst.AnimState:PlayAnimation("lunge_pre")
+                                inst:PerformBufferedAction()
+                            else
+                                inst.sg:GoToState("idle")
+                            end
+                        end
+                    else
+                        _animover(inst)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+AddStategraphPostInit("wilson", function(sg)
     local l = sg.states["combat_lunge"]
     if l then
         local _onenter_lunge = l.onenter
@@ -462,8 +505,9 @@ AddStategraphPostInit("wilson", function(sg)
                     data.targetpos ~= nil and
                     data.weapon ~= nil and
                     data.weapon.components.aoeweapon_lunge ~= nil and
-                    inst.AnimState:IsCurrentAnimation("lunge_lag") then
-                    inst.AnimState:PlayAnimation("lunge_pst")
+inst.AnimState:IsCurrentAnimation("lunge_pre") then
+                    inst.AnimState:SetBank("owlette")
+                    inst.AnimState:PlayAnimation("dash_loop")
                     inst.SoundEmitter:PlaySound("dontstarve/wilson/attack_weapon")
                     local pos = inst:GetPosition()
                     local dir
