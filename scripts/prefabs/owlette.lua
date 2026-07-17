@@ -37,8 +37,20 @@ local function apply_phase_modifiers(inst)
     local phase = TheWorld.state.phase
     local mods = PHASE_MODIFIERS[phase]
     if mods then
-        inst.components.combat.damagemultiplier = mods.damage
-        inst.components.locomotor:SetExternalSpeedMultiplier(inst, "owlette_speed_mod", mods.speed)
+        local dmg = mods.damage
+        local spd = mods.speed
+
+        if (phase == "night" or phase == "dusk") then
+            if inst:HasTag("owlette_nightvision_2") then
+                spd = spd * 1.15
+            end
+            if inst:HasTag("owlette_nightvision_3") then
+                dmg = dmg * 1.15
+            end
+        end
+
+        inst.components.combat.damagemultiplier = dmg
+        inst.components.locomotor:SetExternalSpeedMultiplier(inst, "owlette_speed_mod", spd)
     end
 end
 
@@ -57,9 +69,23 @@ local function update_dapperness(inst)
     end
 end
 
+local function update_nightvision(inst)
+	if inst.components.playervision == nil or TheSkillTree == nil then return end
+
+	local has_skill = TheSkillTree:IsActivated("owlette_nightvision_1", "owlette")
+	local is_dark = TheWorld.state.isnight or TheWorld.state.isdusk or TheWorld.state.iscave
+
+	if has_skill and is_dark then
+		inst.components.playervision:PushForcedNightVision(inst, 0, nil, true, nil, true)
+	else
+		inst.components.playervision:PopForcedNightVision(inst)
+	end
+end
+
 local function onphasechange(inst, phase)
     apply_phase_modifiers(inst)
     update_dapperness(inst)
+    update_nightvision(inst)
 end
 
 local function onbecamehuman(inst)
@@ -91,16 +117,6 @@ local function onload(inst)
 end
 
 
-local function update_nightvision(inst)
-	if inst.components.playervision == nil or TheSkillTree == nil then return end
-
-	if TheSkillTree:IsActivated("owlette_nightvision_1", "owlette") then
-		inst.components.playervision:PushForcedNightVision(inst, 0, nil, true, nil, true)
-	else
-		inst.components.playervision:PopForcedNightVision(inst)
-	end
-end
-
 
 -- This initializes for both the server and client. Tags can be added here.
 local common_postinit = function(inst) 
@@ -126,11 +142,11 @@ local common_postinit = function(inst)
 	inst:ListenForEvent("onactivateskill_client", function(_, data)
 		if data.skill == "owlette_flight_4" then
 			if inst.components.aoetargeting ~= nil then
-				inst.components.aoetargeting:SetRange(15)
+				inst.components.aoetargeting:SetRange(12)
 			end
 		elseif data.skill == "owlette_flight_5" then
 			if inst.components.aoetargeting ~= nil then
-				inst.components.aoetargeting:SetRange(18)
+				inst.components.aoetargeting:SetRange(15)
 			end
 		end
 	end)
@@ -142,13 +158,16 @@ local common_postinit = function(inst)
 		elseif data.skill == "owlette_flight_5" then
 			if inst.components.aoetargeting ~= nil then
 				if TheSkillTree:IsActivated("owlette_flight_4", "owlette") then
-					inst.components.aoetargeting:SetRange(15)
+					inst.components.aoetargeting:SetRange(12)
 				else
 	inst.components.aoetargeting:SetRange(9)
 				end
 			end
 		end
 	end)
+
+	-- Night vision phase watcher (client-side)
+	inst:WatchWorldState("phase", function() update_nightvision(inst) end)
 
 	-- Restore state on load
 	inst:DoTaskInTime(0, function()
@@ -226,6 +245,8 @@ local master_postinit = function(inst)
 	inst.components.sanity.night_drain_mult = 0
 	inst.components.sanity.dusk_drain_mult = 0
 	
+	inst._apply_phase_modifiers = apply_phase_modifiers
+
 	inst:WatchWorldState("phase", onphasechange)
 	inst:ListenForEvent("sheltered", onshelteredchange)
 	update_dapperness(inst)

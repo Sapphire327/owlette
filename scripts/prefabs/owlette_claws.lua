@@ -189,6 +189,20 @@ local function fn()
     inst.components.equippable:SetOnUnequip(OnUnequip)
 
     inst.components.weapon:SetDamage(34)
+
+    inst:AddComponent("finiteuses")
+    inst.components.finiteuses:SetMaxUses(125)
+    inst.components.finiteuses:SetUses(125)
+    inst.components.finiteuses:SetOnFinished(function(inst)
+        local owner = inst.components.inventoryitem and inst.components.inventoryitem:GetGrandOwner()
+        local ground = true
+        if owner and owner:IsValid() and owner.components.inventory then
+            owner.components.inventory:DropItem(inst)
+            ground = false
+        end
+        inst:Remove()
+    end)
+
     inst.components.weapon.GetDamage = function(self)
         local owner = inst.components.inventoryitem:GetGrandOwner()
         if owner and owner:IsValid() then

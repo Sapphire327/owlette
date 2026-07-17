@@ -417,6 +417,48 @@ AddComponentPostInit("aoetargeting", function(self)
 	end
 end)
 
+-- Night Vision branch: Night Snack (nightvision_4) - food gives 1.5x stats at night/dusk
+AddComponentPostInit("eater", function(self)
+    local _ApplyEffects = self.ApplyEffects
+    self.ApplyEffects = function(self, food, ...)
+        _ApplyEffects(self, food, ...)
+        local inst = self.inst
+        if not inst:HasTag("owlette_nightvision_4") then return end
+        if not (TheWorld.state.isnight or TheWorld.state.isdusk) then return end
+        if not food or not food.components.edible then return end
+
+        local health = food.components.edible:GetHealth(inst)
+        local hunger = food.components.edible:GetHunger(inst)
+        local sanity = food.components.edible:GetSanity(inst)
+
+        if health and health > 0 then
+            inst.components.health:DoDelta(health * 0.5)
+        end
+        if hunger and hunger > 0 then
+            inst.components.hunger:DoDelta(hunger * 0.5)
+        end
+        if sanity and sanity > 0 then
+            inst.components.sanity:DoDelta(sanity * 0.5)
+        end
+    end
+end)
+
+
+-- Feathers branch: Waterproof Feathers (feathers_2) and Dry Feather (feathers_4)
+AddComponentPostInit("moisture", function(self)
+    local _DoDelta = self.DoDelta
+    self.DoDelta = function(self, delta, ...)
+        if self.inst:HasTag("owlette_feathers_2") and delta > 0 then
+            delta = delta * 0.6
+        end
+        if self.inst:HasTag("owlette_feathers_4") and delta < 0 then
+            delta = delta * 2.0
+        end
+        return _DoDelta(self, delta, ...)
+    end
+end)
+
+
 -- Claws attack speed boost (works for any character equipping owlette_claws)
 AddStategraphPostInit("wilson", function(sg)
     local _attack = sg.states["attack"]
@@ -461,7 +503,7 @@ AddStategraphPostInit("wilson", function(sg)
                 inst.components.locomotor:Stop()
                 inst.AnimState:SetBank("owlette")
                 inst.AnimState:PlayAnimation("lunge_pre")
-                local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 4 or 1
+                local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
                 inst.AnimState:SetDeltaTimeMultiplier(speed)
                 inst.sg.statemem.owlette_dash_speed = speed
             else
@@ -513,7 +555,7 @@ AddStategraphPostInit("wilson", function(sg)
                     data.weapon.components.aoeweapon_lunge ~= nil then
                     inst.AnimState:SetBank("owlette")
                     inst.AnimState:PlayAnimation("lunge_pst")
-                    local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 4 or 1
+                    local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
                     inst.AnimState:SetDeltaTimeMultiplier(speed)
                     inst.sg.statemem.owlette_dash_speed = speed
                     inst.SoundEmitter:PlaySound("dontstarve/wilson/attack_weapon")
@@ -598,5 +640,3 @@ AddStategraphPostInit("wilson", function(sg)
         end
     end
 end)
-
-
