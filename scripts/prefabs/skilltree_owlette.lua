@@ -294,6 +294,7 @@ local SKILLS = {
         group = "flight",
         tags = {"flight"},
         connects = {"owlette_flight_2"},
+        must_have_one_of = { owlette_nightvision_1 = true },
         onactivate = function(inst, fromload)
             inst:AddTag("aoeweapon_lunge")
             if not TheWorld.ismastersim then return end
