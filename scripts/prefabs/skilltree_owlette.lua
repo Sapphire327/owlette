@@ -296,12 +296,10 @@ local SKILLS = {
         connects = {"owlette_flight_2"},
         must_have_one_of = { owlette_nightvision_1 = true },
         onactivate = function(inst, fromload)
-            inst:AddTag("aoeweapon_lunge")
             if not TheWorld.ismastersim then return end
             inst.components.aoetargeting:SetEnabled(true)
         end,
         ondeactivate = function(inst, fromload)
-            inst:RemoveTag("aoeweapon_lunge")
             if not TheWorld.ismastersim then return end
             inst.components.aoetargeting:SetEnabled(false)
             if inst.components.playercontroller ~= nil then

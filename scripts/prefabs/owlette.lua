@@ -117,18 +117,17 @@ local function onload(inst)
 end
 
 local function apply_flight_skill_effects(inst)
-    if TheSkillTree == nil or inst:HasTag("playerghost") then return end
+    if TheSkillTree == nil or inst:HasTag("playerghost") then
+        print("[OWLETTE_DEBUG] apply_flight_skill_effects: early return, TheSkillTree=", tostring(TheSkillTree), "ghost=", tostring(inst:HasTag("playerghost")))
+        return
+    end
 
     local has_flight_1 = TheSkillTree:IsActivated("owlette_flight_1", "owlette")
-
-    if has_flight_1 then
-        inst:AddTag("aoeweapon_lunge")
-    else
-        inst:RemoveTag("aoeweapon_lunge")
-    end
+    print("[OWLETTE_DEBUG] apply_flight_skill_effects: has_flight_1=", tostring(has_flight_1), " ismastersim=", tostring(TheWorld.ismastersim))
 
     local at = inst.components.aoetargeting
     if at ~= nil then
+        print("[OWLETTE_DEBUG] apply_flight_skill_effects: setting enabled=", tostring(has_flight_1))
         at:SetEnabled(has_flight_1)
         if has_flight_1 then
             local range = 9
@@ -168,6 +167,61 @@ local function apply_flight_skill_effects(inst)
     end
 end
 
+-- Flight dash execution (shared between client prediction and server execution)
+-- inst = entity with aoespell (player), doer = target entity or nil, pos = ground position
+local function DoFlightDash(inst, doer, pos)
+	print("[OWLETTE_DEBUG] DoFlightDash called: inst=", inst, " doer=", doer, " pos=", pos)
+	if not inst or not pos then
+		print("[OWLETTE_DEBUG] DoFlightDash: invalid args")
+		return false
+	end
+
+	local target = doer or inst
+	print("[OWLETTE_DEBUG] DoFlightDash: target=", target)
+
+	if target._flight_dash_next_time and GetTime() < target._flight_dash_next_time then
+		print("[OWLETTE_DEBUG] DoFlightDash: on cooldown")
+		return false
+	end
+	local cooldown = target._flight_dash_cooldown or 8
+	target._flight_dash_next_time = GetTime() + cooldown
+
+	if GLOBAL.TheWorld.ismastersim then
+		if target._dash_cd_meter then target._dash_cd_meter:Cancel() end
+		if target._dash_cd_clear then target._dash_cd_clear:Cancel() end
+		local max_meter = math.min(255, math.floor(cooldown * 10 + 0.5))
+		if target.player_classified then
+			target.player_classified.actionmetertime:set(max_meter)
+			target.player_classified.actionmeter:set(max_meter)
+		end
+		target._dash_cd_meter = target:DoPeriodicTask(0.1, function()
+			if not target:IsValid() then return end
+			if not target.player_classified then return end
+			local remaining = target._flight_dash_next_time - GetTime()
+			local val = math.max(0, math.min(255, math.floor(remaining * 10)))
+			target.player_classified.actionmeter:set(val)
+			if val <= 0 then
+				if target._dash_cd_meter then
+					target._dash_cd_meter:Cancel()
+					target._dash_cd_meter = nil
+				end
+			end
+		end)
+		target._dash_cd_clear = target:DoTaskInTime(cooldown, function()
+			if target:IsValid() and target.player_classified then
+				target.player_classified.actionmeter:set(0)
+			end
+			if target._dash_cd_meter then
+				target._dash_cd_meter:Cancel()
+				target._dash_cd_meter = nil
+			end
+			target._dash_cd_clear = nil
+		end)
+	end
+
+	target:PushEvent("combat_lunge", { targetpos = pos, weapon = inst })
+end
+
 -- This initializes for both the server and client. Tags can be added here.
 local common_postinit = function(inst) 
 	-- Minimap icon
@@ -175,9 +229,17 @@ local common_postinit = function(inst)
 
 	inst:AddTag("owlette")
 	inst:AddTag("nocturn")
+	inst:AddTag("aoeweapon_lunge")
+	print("[OWLETTE_DEBUG] common_postinit ran, aoeweapon_lunge tag set on ", inst)
 
-	-- Flight dash targeting (client + server)
+	-- Flight dash targeting, spell, and lunge components (client + server)
 	inst:AddComponent("aoetargeting")
+	inst:AddComponent("aoespell")
+	inst.components.aoespell:SetSpellFn(DoFlightDash)
+	inst:AddComponent("aoeweapon_lunge")
+	inst.components.aoeweapon_lunge:SetDamage(0)
+	inst.components.aoeweapon_lunge:SetSideRange(0)
+	inst.components.aoeweapon_lunge:SetTags("__owlette_dash_nohit__")
 	inst.components.aoetargeting:SetEnabled(false)
 	inst.components.aoetargeting:SetRange(9)
 	inst.components.aoetargeting:SetAllowRiding(false)
@@ -229,7 +291,9 @@ local common_postinit = function(inst)
 
 	-- Flight dash client events (visual range sync)
 	inst:ListenForEvent("onactivateskill_client", function(_, data)
-		if data.skill == "owlette_flight_4" then
+		if data.skill == "owlette_flight_1" then
+			apply_flight_skill_effects(inst)
+		elseif data.skill == "owlette_flight_4" then
 			if inst.components.aoetargeting ~= nil then
 				inst.components.aoetargeting:SetRange(12)
 			end
@@ -240,7 +304,9 @@ local common_postinit = function(inst)
 		end
 	end)
 	inst:ListenForEvent("ondeactivateskill_client", function(_, data)
-		if data.skill == "owlette_flight_4" then
+		if data.skill == "owlette_flight_1" then
+			apply_flight_skill_effects(inst)
+		elseif data.skill == "owlette_flight_4" then
 			if inst.components.aoetargeting ~= nil then
 				inst.components.aoetargeting:SetRange(9)
 			end
@@ -344,55 +410,7 @@ local master_postinit = function(inst)
 	-- Hunger rate (optional)
 	inst.components.hunger.hungerrate = 1 * TUNING.WILSON_HUNGER_RATE
 
-	-- Flight dash server components
-	local function DoFlightDash(inst, doer, pos)
-		if inst._flight_dash_next_time and GetTime() < inst._flight_dash_next_time then
-			return false
-		end
-		local cooldown = inst._flight_dash_cooldown or 8
-		inst._flight_dash_next_time = GetTime() + cooldown
-		-- Cooldown indicator (actionmeter for HUD text)
-		if doer._dash_cd_meter then doer._dash_cd_meter:Cancel() end
-		if doer._dash_cd_clear then doer._dash_cd_clear:Cancel() end
-		local max_meter = math.min(255, math.floor(cooldown * 10 + 0.5))
-		if doer.player_classified then
-			doer.player_classified.actionmetertime:set(max_meter)
-			doer.player_classified.actionmeter:set(max_meter)
-		end
-		doer._dash_cd_meter = doer:DoPeriodicTask(0.1, function()
-			if not doer:IsValid() then return end
-			if not doer.player_classified then return end
-			local remaining = inst._flight_dash_next_time - GetTime()
-			local val = math.max(0, math.min(255, math.floor(remaining * 10)))
-			doer.player_classified.actionmeter:set(val)
-			if val <= 0 then
-				if doer._dash_cd_meter then
-					doer._dash_cd_meter:Cancel()
-					doer._dash_cd_meter = nil
-				end
-			end
-		end)
-		doer._dash_cd_clear = doer:DoTaskInTime(cooldown, function()
-			if doer:IsValid() and doer.player_classified then
-				doer.player_classified.actionmeter:set(0)
-			end
-			if doer._dash_cd_meter then
-				doer._dash_cd_meter:Cancel()
-				doer._dash_cd_meter = nil
-			end
-			doer._dash_cd_clear = nil
-		end)
-		doer:PushEvent("combat_lunge", { targetpos = pos, weapon = inst })
-	end
-
-	inst:AddComponent("aoespell")
-	inst.components.aoespell:SetSpellFn(DoFlightDash)
-
-	inst:AddComponent("aoeweapon_lunge")
-	inst.components.aoeweapon_lunge:SetDamage(0)
-	inst.components.aoeweapon_lunge:SetSideRange(0)
-	inst.components.aoeweapon_lunge:SetTags("__owlette_dash_nohit__")
-
+	-- Flight dash init (server-only)
 	inst._flight_dash_cooldown = 8
 	inst._flight_dash_next_time = 0
 

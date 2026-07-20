@@ -1,3 +1,5 @@
+print("[OWLETTE_DEBUG] modmain.lua loaded successfully")
+
 PrefabFiles = {
 	"owlette",
 	"owlette_none",
@@ -276,9 +278,80 @@ end)
 
 -- Flight dash - character-hosted AOE targeting
 -- These patches allow the player entity to host aoetargeting/aoespell for a RMB dash line
+-- ModRPC for dash: client sends target position, server teleports directly
+GLOBAL.AddModRPCHandler("owlette", "dash", function(player, pos_x, pos_z)
+    print("[OWLETTE_DEBUG] ModRPC dash received, player=", player, "pos=", pos_x, pos_z)
+    local inst = player
+    if inst == nil or not inst:IsValid() then
+        print("[OWLETTE_DEBUG] ModRPC: invalid inst, returning")
+        return
+    end
+    if not inst:HasTag("aoeweapon_lunge") then
+        print("[OWLETTE_DEBUG] ModRPC: missing aoeweapon_lunge tag, returning")
+        return
+    end
+    local target = inst
+    if target._flight_dash_next_time ~= nil and GLOBAL.GetTime() < target._flight_dash_next_time then
+        return
+    end
+    local cooldown = target._flight_dash_cooldown or 8
+    target._flight_dash_next_time = GLOBAL.GetTime() + cooldown
+
+    -- Set up cooldown meter
+    if target.player_classified then
+        local max_meter = math.min(255, math.floor(cooldown * 10 + 0.5))
+        target.player_classified.actionmetertime:set(max_meter)
+        target.player_classified.actionmeter:set(max_meter)
+    end
+    if target._dash_cd_meter then target._dash_cd_meter:Cancel() end
+    if target._dash_cd_clear then target._dash_cd_clear:Cancel() end
+    target._dash_cd_meter = target:DoPeriodicTask(0.1, function()
+        if not target:IsValid() then return end
+        if not target.player_classified then return end
+        local remaining = target._flight_dash_next_time - GLOBAL.GetTime()
+        local val = math.max(0, math.min(255, math.floor(remaining * 10)))
+        target.player_classified.actionmeter:set(val)
+        if val <= 0 then
+            if target._dash_cd_meter then
+                target._dash_cd_meter:Cancel()
+                target._dash_cd_meter = nil
+            end
+        end
+    end)
+    target._dash_cd_clear = target:DoTaskInTime(cooldown, function()
+        if target:IsValid() and target.player_classified then
+            target.player_classified.actionmeter:set(0)
+        end
+        if target._dash_cd_meter then
+            target._dash_cd_meter:Cancel()
+            target._dash_cd_meter = nil
+        end
+        target._dash_cd_clear = nil
+    end)
+
+    -- Enter combat_lunge_start so client's ServerStateMatches() returns true.
+    -- Teleport happens in animover when lunge_pre finishes.
+    -- State exits via ontimeout -> idle.
+    inst.sg:GoToState("combat_lunge_start", { targetpos = { x = pos_x, z = pos_z }, weapon = inst })
+end)
+
 AddComponentPostInit("playercontroller", function(self)
 	local _HasAOETargeting = self.HasAOETargeting
 	self.HasAOETargeting = function(self)
+		if self.inst:HasTag("aoeweapon_lunge") then
+			-- Check skill directly, bypass component replication issues
+			local has_skill = GLOBAL.TheSkillTree ~= nil and GLOBAL.TheSkillTree:IsActivated("owlette_flight_1", "owlette")
+			print("[OWLETTE_DEBUG] HasAOETargeting: owlette, has_skill=", tostring(has_skill))
+			if has_skill then
+				local at = self.inst.components.aoetargeting
+				if at ~= nil then
+					if at.allowriding then return true end
+					local rider = self.inst.replica.rider
+					return rider == nil or not rider:IsRiding()
+				end
+			end
+			return false
+		end
 		if _HasAOETargeting(self) then return true end
 		local at = self.inst.components.aoetargeting
 		if at ~= nil and at:IsEnabled() then
@@ -291,11 +364,25 @@ AddComponentPostInit("playercontroller", function(self)
 
 	local _TryAOETargeting = self.TryAOETargeting
 	self.TryAOETargeting = function(self)
-		if _TryAOETargeting(self) then
-			return true
+		local is_owlette = self.inst:HasTag("aoeweapon_lunge")
+		if not is_owlette then
+			if _TryAOETargeting(self) then
+				return true
+			end
 		end
 		local at = self.inst.components.aoetargeting
-		if at ~= nil and at:IsEnabled() then
+		if is_owlette then
+			local has_skill = GLOBAL.TheSkillTree ~= nil and GLOBAL.TheSkillTree:IsActivated("owlette_flight_1", "owlette")
+			print("[OWLETTE_DEBUG] TryAOETargeting: owlette, has_skill=", tostring(has_skill))
+			if not has_skill then
+				return false
+			end
+		else
+			if at == nil or not at:IsEnabled() then
+				return false
+			end
+		end
+		if at ~= nil then
 			if not at.allowriding then
 				local rider = self.inst.replica.rider
 				if rider ~= nil and rider:IsRiding() then return false end
@@ -303,20 +390,11 @@ AddComponentPostInit("playercontroller", function(self)
 			if self.inst._flight_dash_next_time ~= nil and GLOBAL.GetTime() < self.inst._flight_dash_next_time then
 				return false
 			end
+			self.aoetargetingactive = true
 			at:StartTargeting()
 			return true
 		end
 		return false
-	end
-
-	local _GetActiveSpellBook = self.GetActiveSpellBook
-	self.GetActiveSpellBook = function(self)
-		local ret = _GetActiveSpellBook(self)
-		if ret ~= nil then return ret end
-		if self.reticule ~= nil and self.reticule.inst == self.inst and self.inst.components.aoespell ~= nil then
-			return self.inst
-		end
-		return nil
 	end
 
 	local _GetGroundUseAction = self.GetGroundUseAction
@@ -341,59 +419,40 @@ AddComponentPostInit("playercontroller", function(self)
 		return lmb, rmb
 	end
 
-	-- Fix OnLeftClick: guard against nil spellbook component on player-hosted AOEs
-	local _OnLeftClick = self.OnLeftClick
-	self.OnLeftClick = function(self, down)
-		local needs_stub = self.reticule ~= nil
-			and self:GetActiveSpellBook() == self.inst
-			and self.inst.components.spellbook == nil
-
-		if needs_stub then
-			self.inst.components.spellbook = { GetSelectedSpell = function() return nil end }
+	-- GetRightMouseAction: during AOE targeting, return a CASTAOE action with current reticule position.
+	-- Required for vanilla OnLeftClick to detect CASTAOE and send the RPC.
+	local _GetRightMouseAction = self.GetRightMouseAction
+	self.GetRightMouseAction = function(self)
+		if self:IsAOETargeting() then
+			local at = self.inst.components.aoetargeting
+			if at ~= nil then
+				local pos = self:GetAOETargetingPos() or self.inst:GetPosition()
+				return GLOBAL.BufferedAction(self.inst, nil, ACTIONS.CASTAOE, self.inst, pos)
+			end
 		end
-
-		local result = _OnLeftClick(self, down)
-
-		if needs_stub then
-			self.inst.components.spellbook = nil
-		end
-
-		return result
+		return _GetRightMouseAction(self)
 	end
 
-	-- Fix OnRemoteLeftClick: handle player as spellbook for player-hosted AOEs
-	local _OnRemoteLeftClick = self.OnRemoteLeftClick
-	self.OnRemoteLeftClick = function(self, actioncode, position, target, isreleased, controlmodscode, noforce, mod_name, spellbook, spell_id)
-		if spellbook ~= nil and spellbook == self.inst and spellbook.components.aoespell ~= nil then
-			-- Player-hosted AOE spellbook
-			if self.ismastersim and self:IsEnabled() and self.handler == nil then
-				self.inst.components.combat:SetTarget(nil)
-				self.remote_controls[CONTROL_PRIMARY] = 0
-
-				self:DecodeControlMods(controlmodscode)
-				SetClientRequestedAction(actioncode, mod_name)
-				local lmb, rmb = self.inst.components.playeractionpicker:DoGetMouseActions(position, target, spellbook)
-				ClearClientRequestedAction()
-				if isreleased then
-					self.remote_controls[CONTROL_PRIMARY] = nil
-				end
-				self:ClearControlMods()
-
-				lmb = (lmb ~= nil and lmb.action.code == actioncode and lmb)
-					or (rmb ~= nil and rmb.action.code == actioncode and rmb)
-					or nil
-
-				if lmb ~= nil then
-					if lmb.action.canforce and not noforce then
-						lmb:SetActionPoint(self:GetRemotePredictPosition() or self.inst:GetPosition())
-						lmb.forced = true
-					end
-					self:DoAction(lmb, spellbook)
-				end
-			end
-			return
+	-- OnLeftClick: during AOE targeting, send ModRPC with target position to server,
+	-- and start client-side prediction (combat_lunge_start).
+	local _OnLeftClick = self.OnLeftClick
+	self.OnLeftClick = function(self, down)
+		local inst = self.inst
+		local is_client = not (GLOBAL.TheWorld and GLOBAL.TheWorld.ismastersim)
+		local pos
+		if is_client and down and self:IsAOETargeting() and inst ~= nil and inst:HasTag("aoeweapon_lunge")
+			and GLOBAL.TheSkillTree ~= nil and GLOBAL.TheSkillTree:IsActivated("owlette_flight_1", "owlette") then
+			pos = self:GetAOETargetingPos() or inst:GetPosition()
+			print("[OWLETTE_DEBUG] OnLeftClick: targeting active, pos=", pos)
 		end
-		return _OnRemoteLeftClick(self, actioncode, position, target, isreleased, controlmodscode, noforce, mod_name, spellbook, spell_id)
+		local result = _OnLeftClick(self, down)
+		if is_client and pos and inst ~= nil and inst.sg ~= nil then
+			print("[OWLETTE_DEBUG] OnLeftClick: sending ModRPC dash pos=", pos)
+			GLOBAL.SendModRPCToServer(GLOBAL.GetModRPC("owlette", "dash"), pos.x, pos.z)
+			self:CancelAOETargeting()
+			inst.sg:GoToState("combat_lunge_start", { targetpos = pos, weapon = inst })
+			end
+		return result
 	end
 end)
 
@@ -413,8 +472,244 @@ AddComponentPostInit("aoetargeting", function(self)
 					_StartTargeting(self)
 				end
 			end
+        end
+    end
+end)
+
+print("[OWLETTE_DEBUG] modmain.lua loaded successfully")
+
+-- Helper to add a state to both server and client SGs
+local function AddStateToBothSGs(state_def)
+    local ok1, err1 = pcall(AddStategraphState, "SGwilson", state_def)
+    local ok2, err2 = pcall(AddStategraphState, "SGwilson_client", state_def)
+    if not ok1 then print("[OWLETTE_DEBUG] AddStategraphState(SGwilson) error: " .. tostring(err1)) end
+    if not ok2 then print("[OWLETTE_DEBUG] AddStategraphState(SGwilson_client) error: " .. tostring(err2)) end
+end
+
+-- Modify combat_lunge_start on server SG: teleport + exit via timeout
+AddStategraphPostInit("wilson", function(sg)
+    local start_state = sg.states["combat_lunge_start"]
+    if start_state then
+        local _s_onenter = start_state.onenter
+        start_state.onenter = function(inst, data)
+            _s_onenter(inst, data)
+            if inst:HasTag("owlette") then
+                local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
+                -- Set rotation BEFORE animation speed change
+                if data ~= nil and data.targetpos ~= nil then
+                    local tx, tz = data.targetpos.x, data.targetpos.z
+                    local x, y, z = inst.Transform:GetWorldPosition()
+                    local angle = -math.atan2(tz - z, tx - x) * 180 / math.pi
+                    inst.Transform:SetRotation(angle)
+                    print("[OWLETTE_DEBUG] SERVER set rotation=", angle, "target", tx, tz)
+                    inst:DoTaskInTime(0.537 / speed, function()
+                        if inst:IsValid() then
+                            inst.Physics:Teleport(tx, 0, tz)
+                            print("[OWLETTE_DEBUG] SERVER teleported at anim end", tx, tz)
+                        end
+                    end)
+                end
+                inst.AnimState:SetDeltaTimeMultiplier(speed)
+                inst.sg.statemem.owlette_dash_speed = speed
+                inst.sg:SetTimeout(0.6)
+                print("[OWLETTE_DEBUG] SERVER onenter combat_lunge_start")
+            end
+        end
+
+        local _s_onexit = start_state.onexit
+        start_state.onexit = function(inst)
+            if inst:HasTag("owlette") then
+                inst.AnimState:SetDeltaTimeMultiplier(1)
+                print("[OWLETTE_DEBUG] SERVER onexit combat_lunge_start")
+            end
+            if _s_onexit then _s_onexit(inst) end
+        end
+
+        local _s_ontimeout = start_state.ontimeout
+        start_state.ontimeout = function(inst)
+            if inst:HasTag("owlette") then
+                print("[OWLETTE_DEBUG] SERVER ontimeout -> idle")
+                inst.sg:GoToState("idle")
+            elseif _s_ontimeout then
+                _s_ontimeout(inst)
+            end
+        end
+
+        -- Block vanilla events in this state for owlette (teleport via DoTaskInTime)
+        if start_state.events then
+            for i, evt in ipairs(start_state.events) do
+                if type(evt) == "table" then
+                    local orig_fn = evt.fn
+                    evt.fn = function(inst, data)
+                        if inst:HasTag("owlette") and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
+                            return
+                        end
+                        return orig_fn(inst, data)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- Modify combat_lunge_start for owlette (client SG)
+-- Client stays in this state while server runs combat_lunge_start -> idle
+AddStategraphPostInit("wilson_client", function(sg)
+    print("[OWLETTE_DEBUG] wilson_client postinit")
+    local start_state = sg.states["combat_lunge_start"]
+    print("[OWLETTE_DEBUG] client SG has combat_lunge_start:", start_state ~= nil)
+    if start_state then
+        local _c_onenter = start_state.onenter
+        start_state.onenter = function(inst, data)
+            if inst:HasTag("owlette") then
+                inst.components.locomotor:Stop()
+                -- Set rotation BEFORE bank/animation change to avoid override
+                if data ~= nil and data.targetpos ~= nil then
+                    local tp = data.targetpos
+                    local x, y, z = inst.Transform:GetWorldPosition()
+                    local angle_atan = -math.atan2(tp.z - z, tp.x - x) * 180 / math.pi
+                    inst.Transform:SetRotation(angle_atan)
+                    print("[OWLETTE_DEBUG] CLIENT set rotation=", angle_atan)
+                else
+                    print("[OWLETTE_DEBUG] CLIENT no targetpos data")
+                end
+                inst.AnimState:SetBank("owlette")
+                inst.AnimState:PlayAnimation("lunge_pre")
+                local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
+                inst.AnimState:SetDeltaTimeMultiplier(speed)
+                inst.sg.statemem.owlette_dash_speed = speed
+                inst.sg.statemem.owlette_can_exit = false
+                inst:ClearBufferedAction()
+                print("[OWLETTE_DEBUG] CLIENT onenter combat_lunge_start")
+                inst:DoTaskInTime(0.12, function()
+                    if inst:IsValid() and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
+                        inst.sg.statemem.owlette_can_exit = true
+                        print("[OWLETTE_DEBUG] CLIENT can_exit now true")
+                    end
+                end)
+            else
+                _c_onenter(inst)
+            end
+        end
+
+        local _c_onexit = start_state.onexit
+        start_state.onexit = function(inst)
+            if inst:HasTag("owlette") then
+                inst.AnimState:SetBank("wilson")
+                inst.AnimState:SetDeltaTimeMultiplier(1)
+                print("[OWLETTE_DEBUG] CLIENT onexit combat_lunge_start")
+            end
+            if _c_onexit then _c_onexit(inst) end
+        end
+
+        -- onupdate: block FlattenMovementPrediction; exit only after grace period
+        local _c_onupdate = start_state.onupdate
+        start_state.onupdate = function(inst)
+            if inst:HasTag("owlette") then
+                if inst.sg:ServerStateMatches() then
+                    print("[OWLETTE_DEBUG] CLIENT in sync, staying")
+                    return
+                end
+                print("[OWLETTE_DEBUG] CLIENT not in sync, can_exit=", tostring(inst.sg.statemem.owlette_can_exit), "buf=", tostring(inst.bufferedaction ~= nil))
+                if inst.sg.statemem.owlette_can_exit and inst.bufferedaction == nil then
+                    print("[OWLETTE_DEBUG] CLIENT exit via onupdate")
+                    inst.sg:GoToState("idle")
+                end
+                return
+            end
+            if _c_onupdate then _c_onupdate(inst) end
+        end
+
+        -- Dump all events for debugging
+        print("[OWLETTE_DEBUG] combat_lunge_start events dump:")
+        if start_state.events then
+            for i, evt in ipairs(start_state.events) do
+                print("[OWLETTE_DEBUG]   event " .. i .. ": " .. tostring(evt.event) .. " fn=" .. tostring(evt.fn))
+            end
+        end
+        if start_state.timeline then
+            print("[OWLETTE_DEBUG]   timeline entries: " .. #start_state.timeline)
+            for i, te in ipairs(start_state.timeline) do
+                local fn = te[2] or te.fn
+                print("[OWLETTE_DEBUG]     timeline[" .. i .. "] time=" .. tostring(te[1] or te.time) .. " fn=" .. tostring(fn))
+                if fn then
+                    local new_fn = function(inst, ...)
+                        if inst:HasTag("owlette") and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
+                            print("[OWLETTE_DEBUG] timeline blocked: time=" .. tostring(te[1] or te.time))
+                            return
+                        end
+                        return fn(inst, ...)
+                    end
+                    te[2] = new_fn
+                    te.fn = new_fn
+                end
+            end
+        end
+
+        -- Intercept sg_cancelmovementprediction to prevent early exit after teleport
+        for i, evt in ipairs(sg.events) do
+            if evt.event == "sg_cancelmovementprediction" and evt.fn then
+                local orig_fn = evt.fn
+                evt.fn = function(inst, ...)
+                    if inst:HasTag("owlette") and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
+                        return
+                    end
+                    return orig_fn(inst, ...)
+                end
+                print("[OWLETTE_DEBUG] blocked sg_cancelmovementprediction for owlette")
+            end
+        end
+
+		-- Override vanilla events in this state for owlette
+		if start_state.events then
+			for i, evt in ipairs(start_state.events) do
+				if type(evt) == "table" then
+					local orig_fn = evt.fn
+					if evt.event == "animover" then
+						evt.fn = function(inst, data)
+							if inst:HasTag("owlette") and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
+								return
+							end
+							return orig_fn(inst, data)
+						end
+					elseif evt.event == "combat_lunge" then
+						evt.fn = function(inst, data)
+							if inst:HasTag("owlette") and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
+								return
+							end
+							return orig_fn(inst, data)
+						end
+					end
+				end
+			end
 		end
-	end
+
+		local _c_ontimeout = start_state.ontimeout
+        start_state.ontimeout = function(inst)
+            if inst:HasTag("owlette") then
+                print("[OWLETTE_DEBUG] CLIENT ontimeout")
+                inst:ClearBufferedAction()
+                inst.sg:GoToState("idle")
+            end
+            if _c_ontimeout then _c_ontimeout(inst) end
+        end
+    end
+end)
+
+-- SG-level combat_lunge event handler (catches PushEvent from any state)
+AddStategraphPostInit("wilson", function(sg)
+    -- Only add if not already present
+    for _, evt in ipairs(sg.events) do
+        if type(evt) == "table" and evt.event == "combat_lunge" then return end
+    end
+    table.insert(sg.events, {
+        event = "combat_lunge",
+        fn = function(inst, data)
+            if inst ~= nil and inst:HasTag("aoeweapon_lunge") and data ~= nil and data.targetpos ~= nil then
+                inst.sg:GoToState("combat_lunge", data)
+            end
+        end
+    })
 end)
 
 -- Night Vision branch: Night Snack (nightvision_4) - food gives 1.5x stats at night/dusk
@@ -494,149 +789,4 @@ AddStategraphPostInit("wilson", function(sg)
     end
 end)
 
-AddStategraphPostInit("wilson", function(sg)
-    local s = sg.states["combat_lunge_start"]
-    if s then
-        local _onenter_s = s.onenter
-        s.onenter = function(inst, ...)
-            if inst:HasTag("owlette") then
-                inst.components.locomotor:Stop()
-                inst.AnimState:SetBank("owlette")
-                inst.AnimState:PlayAnimation("lunge_pre")
-                local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
-                inst.AnimState:SetDeltaTimeMultiplier(speed)
-                inst.sg.statemem.owlette_dash_speed = speed
-            else
-                _onenter_s(inst, ...)
-            end
-        end
-        local _onexit_s = s.onexit
-        s.onexit = function(inst, ...)
-            if inst:HasTag("owlette") then
-                inst.AnimState:SetDeltaTimeMultiplier(1)
-                inst.AnimState:SetBank("wilson")
-            end
-            if _onexit_s then
-                _onexit_s(inst, ...)
-            end
-        end
-        for i, evt in ipairs(s.events) do
-            if evt.event == "animover" then
-                local _animover = evt.fn
-                evt.fn = function(inst)
-                    if inst:HasTag("owlette") then
-                        if inst.AnimState:AnimDone() then
-                            if inst.AnimState:IsCurrentAnimation("lunge_pre") then
-                                inst.AnimState:PlayAnimation("lunge_pre")
-                                inst:PerformBufferedAction()
-                            else
-                                inst.sg:GoToState("idle")
-                            end
-                        end
-                    else
-                        _animover(inst)
-                    end
-                end
-            end
-        end
-    end
-end)
 
-AddStategraphPostInit("wilson", function(sg)
-    local l = sg.states["combat_lunge"]
-    if l then
-        local _onenter_lunge = l.onenter
-        local _onexit_lunge = l.onexit
-        l.onenter = function(inst, data)
-            if inst:HasTag("owlette") then
-                if data ~= nil and
-                    data.targetpos ~= nil and
-                    data.weapon ~= nil and
-                    data.weapon.components.aoeweapon_lunge ~= nil then
-                    inst.AnimState:SetBank("owlette")
-                    inst.AnimState:PlayAnimation("lunge_pst")
-                    local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
-                    inst.AnimState:SetDeltaTimeMultiplier(speed)
-                    inst.sg.statemem.owlette_dash_speed = speed
-                    inst.SoundEmitter:PlaySound("dontstarve/wilson/attack_weapon")
-                    local pos = inst:GetPosition()
-                    local dir
-                    if pos.x ~= data.targetpos.x or pos.z ~= data.targetpos.z then
-                        dir = inst:GetAngleToPoint(data.targetpos)
-                        inst.Transform:SetRotation(dir)
-                    end
-                    if data.weapon.components.aoeweapon_lunge:DoLunge(inst, pos, data.targetpos) then
-                        inst.SoundEmitter:PlaySound(data.weapon.components.aoeweapon_lunge.sound or "dontstarve/common/lava_arena/fireball")
-
-                        local x, z = data.targetpos.x, data.targetpos.z
-                        if dir then
-                            local theta = dir * (math.pi / 180)
-                            local cos_theta = math.cos(theta)
-                            local sin_theta = math.sin(theta)
-                            local x1, z1
-                            local _ispassableatpoint, iscustom = GLOBAL.GetActionPassableTestFnAt(pos:Get())
-                            if not _ispassableatpoint(x, 0, z) then
-                                if _ispassableatpoint(x + 0.1 * cos_theta, 0, z - 0.1 * sin_theta) then
-                                    x1 = x + 0.5 * cos_theta
-                                    z1 = z - 0.5 * sin_theta
-                                elseif _ispassableatpoint(x - 0.1 * cos_theta, 0, z + 0.1 * sin_theta) then
-                                    x1 = x - 0.5 * cos_theta
-                                    z1 = z + 0.5 * sin_theta
-                                elseif iscustom then
-                                    x1, z1 = pos.x, pos.z
-                                    local dist = math.sqrt(GLOBAL.distsq(pos.x, pos.z, x, z))
-                                    while dist > 0.5 do
-                                        dist = dist - 0.5
-                                        if _ispassableatpoint(pos.x + (dist + 0.1) * cos_theta, 0, pos.z - (dist + 0.1) * sin_theta) then
-                                            x1 = pos.x + dist * cos_theta
-                                            z1 = pos.z - dist * sin_theta
-                                            break
-                                        end
-                                    end
-                                end
-                            else
-                                if not _ispassableatpoint(x + 0.1 * cos_theta, 0, z - 0.1 * sin_theta) then
-                                    x1 = x - 0.4 * cos_theta
-                                    z1 = z + 0.4 * sin_theta
-                                elseif not _ispassableatpoint(x - 0.1 * cos_theta, 0, z + 0.1 * sin_theta) then
-                                    x1 = x + 0.4 * cos_theta
-                                    z1 = z - 0.4 * sin_theta
-                                end
-                            end
-
-                            if x1 and _ispassableatpoint(x1, 0, z1) then
-                                x, z = x1, z1
-                            end
-                        end
-
-                        local mass = inst.Physics:GetMass()
-                        if mass > 0 then
-                            inst.sg.statemem.restoremass = mass
-                            inst.Physics:SetMass(mass + 1)
-                        end
-                        inst.Physics:Teleport(x, 0, z)
-
-                        if not data.skipflash and inst.sg.currentstate == "combat_lunge" then
-                            inst.components.bloomer:PushBloom("lunge", "shaders/anim.ksh", -2)
-                            inst.components.colouradder:PushColour("lunge", 1, 1, 0, 0)
-                            inst.sg.statemem.flash = 1
-                        end
-                        return
-                    end
-                end
-                inst.sg:GoToState("idle", true)
-            else
-                _onenter_lunge(inst, data)
-            end
-        end
-        l.onexit = function(inst, ...)
-            if inst:HasTag("owlette") then
-                inst.AnimState:SetDeltaTimeMultiplier(1)
-                inst.AnimState:SetBank("wilson")
-            end
-            if _onexit_lunge then
-                _onexit_lunge(inst, ...)
-            end
-        end
-    end
-end)
