@@ -179,6 +179,12 @@ local function DoFlightDash(inst, doer, pos)
 	local target = doer or inst
 	print("[OWLETTE_DEBUG] DoFlightDash: target=", target)
 
+	if TheWorld ~= nil and TheWorld.Map ~= nil
+		and not TheWorld.Map:CanCastAtPoint(pos, false, false, 0) then
+		print("[OWLETTE_DEBUG] DoFlightDash: invalid position")
+		return false
+	end
+
 	if target._flight_dash_next_time and GetTime() < target._flight_dash_next_time then
 		print("[OWLETTE_DEBUG] DoFlightDash: on cooldown")
 		return false

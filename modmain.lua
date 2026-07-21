@@ -289,6 +289,10 @@ GLOBAL.AddModRPCHandler("owlette", "dash", function(player, pos_x, pos_z)
     if target._flight_dash_next_time ~= nil and GLOBAL.GetTime() < target._flight_dash_next_time then
         return
     end
+    if GLOBAL.TheWorld ~= nil and GLOBAL.TheWorld.Map ~= nil
+        and not GLOBAL.TheWorld.Map:CanCastAtPoint(GLOBAL.Vector3(pos_x, 0, pos_z), false, false, 0) then
+        return
+    end
     local cooldown = target._flight_dash_cooldown or 8
     target._flight_dash_next_time = GLOBAL.GetTime() + cooldown
 
@@ -406,12 +410,16 @@ AddComponentPostInit("playercontroller", function(self)
 			pos = self:GetAOETargetingPos() or inst:GetPosition()
 		end
 		local result = _OnLeftClick(self, down)
-		if is_client and pos and inst ~= nil and inst.sg ~= nil then
+		if is_client and pos and inst ~= nil and inst.sg ~= nil
+			and GLOBAL.TheWorld ~= nil and GLOBAL.TheWorld.Map ~= nil
+			and GLOBAL.TheWorld.Map:CanCastAtPoint(pos, false, false, 0) then
 			GLOBAL.SendModRPCToServer(GLOBAL.GetModRPC("owlette", "dash"), pos.x, pos.z)
 			self:CancelAOETargeting()
 			local cooldown = inst._flight_dash_cooldown or 8
 			inst._flight_dash_next_time = GLOBAL.GetTime() + cooldown
 			inst.sg:GoToState("combat_lunge_start", { targetpos = pos, weapon = inst })
+		elseif is_client and pos then
+			self:CancelAOETargeting()
 			end
 		return result
 	end
