@@ -274,6 +274,19 @@ AddComponentAction("SCENE", "spawner", function(inst, doer, actions, right)
     end
 end)
 
+-- Night vision RPC: client syncs skill state to server (skill tree data doesn't sync properly)
+GLOBAL.AddModRPCHandler("owlette", "nightvision_sync", function(player, active)
+    if player == nil or not player:IsValid() then return end
+    if player.components.grue == nil then return end
+    if active then
+        player.components.grue:AddImmunity("owlette_nightvision_rpc")
+        player:PushEvent("nightvision", true)
+    else
+        player.components.grue:RemoveImmunity("owlette_nightvision_rpc")
+        player:PushEvent("nightvision", false)
+    end
+end)
+
 -- Flight dash - character-hosted AOE targeting
 -- These patches allow the player entity to host aoetargeting/aoespell for a RMB dash line
 -- ModRPC for dash: client sends target position, server teleports directly

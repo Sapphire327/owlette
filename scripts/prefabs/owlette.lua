@@ -70,16 +70,48 @@ local function update_dapperness(inst)
 end
 
 local function update_nightvision(inst)
-	if inst.components.playervision == nil or TheSkillTree == nil then return end
+	if inst.components.playervision == nil then
+		print("[OWLETTE_NV] update_nightvision: playervision is NIL, returning")
+		return
+	end
+	if TheSkillTree == nil then
+		print("[OWLETTE_NV] update_nightvision: TheSkillTree is NIL, returning")
+		return
+	end
 
-	local has_skill = TheSkillTree:IsActivated("owlette_nightvision_1", "owlette")
 	local is_dark = TheWorld.state.isnight or TheWorld.state.isdusk or TheWorld.state.iscave
+	local nv_has_skill = TheSkillTree:IsActivated("owlette_nightvision_1", "owlette")
+	local fl_has_skill = TheSkillTree:IsActivated("owlette_flight_1", "owlette")
+	print("[OWLETTE_NV] update_nightvision: NV=" .. tostring(nv_has_skill) .. " FL=" .. tostring(fl_has_skill) .. " is_dark=" .. tostring(is_dark) .. " ismastersim=" .. tostring(TheWorld.ismastersim))
 
-	if has_skill and is_dark then
+	local active = nv_has_skill and is_dark
+	if active then
 		inst.components.playervision:PushForcedNightVision(inst, 0, nil, true, nil, true)
+		print("[OWLETTE_NV] update_nightvision: PUSHED night vision")
 	else
 		inst.components.playervision:PopForcedNightVision(inst)
+		print("[OWLETTE_NV] update_nightvision: POPPED night vision")
 	end
+
+	-- Sync to server via RPC (skill tree data isn't syncing, so the server doesn't know)
+	if not TheWorld.ismastersim then
+		SendModRPCToServer(GetModRPC("owlette", "nightvision_sync"), active)
+	end
+end
+
+-- Server-side night vision is managed via RPC from client (skill tree data doesn't sync)
+-- No-op: client sends RPC with current state, which adds/removes grue immunity
+local function update_nightvision_server(inst)
+end
+
+-- Fallback: heal darkness damage if RPC immunity is active on the server
+local function onattacked(inst, data)
+	if data == nil or data.stimula ~= "darkness" then return end
+	if inst.components.grue == nil then return end
+	if inst.components.grue.immunity == nil then return end
+	if not inst.components.grue.immunity["owlette_nightvision_rpc"] then return end
+	print("[OWLETTE_NV] onattacked: healing darkness damage=" .. tostring(data.damage))
+	inst.components.health:DoDelta(math.abs(data.damage or 8))
 end
 
 local function onphasechange(inst, phase)
@@ -373,13 +405,16 @@ local master_postinit = function(inst)
 	inst.OnLoad = onload
     inst.OnNewSpawn = onload
 
-    -- Sync flight skill effects across shards
+    -- Sync skill effects across shards
     inst:ListenForEvent("onsetskillselection_server", function()
         apply_flight_skill_effects(inst)
     end)
     inst:DoTaskInTime(0, function()
         apply_flight_skill_effects(inst)
     end)
+
+    -- Night vision: managed via RPC from client (skill tree data doesn't sync to server)
+    inst:ListenForEvent("attacked", onattacked)
 
     -- Feather drop: every 3 mornings
     inst.owlette_feather_day = 0
