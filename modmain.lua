@@ -292,38 +292,6 @@ GLOBAL.AddModRPCHandler("owlette", "dash", function(player, pos_x, pos_z)
     local cooldown = target._flight_dash_cooldown or 8
     target._flight_dash_next_time = GLOBAL.GetTime() + cooldown
 
-    -- Set up cooldown meter
-    if target.player_classified then
-        local max_meter = math.min(255, math.floor(cooldown * 10 + 0.5))
-        target.player_classified.actionmetertime:set(max_meter)
-        target.player_classified.actionmeter:set(max_meter)
-    end
-    if target._dash_cd_meter then target._dash_cd_meter:Cancel() end
-    if target._dash_cd_clear then target._dash_cd_clear:Cancel() end
-    target._dash_cd_meter = target:DoPeriodicTask(0.1, function()
-        if not target:IsValid() then return end
-        if not target.player_classified then return end
-        local remaining = target._flight_dash_next_time - GLOBAL.GetTime()
-        local val = math.max(0, math.min(255, math.floor(remaining * 10)))
-        target.player_classified.actionmeter:set(val)
-        if val <= 0 then
-            if target._dash_cd_meter then
-                target._dash_cd_meter:Cancel()
-                target._dash_cd_meter = nil
-            end
-        end
-    end)
-    target._dash_cd_clear = target:DoTaskInTime(cooldown, function()
-        if target:IsValid() and target.player_classified then
-            target.player_classified.actionmeter:set(0)
-        end
-        if target._dash_cd_meter then
-            target._dash_cd_meter:Cancel()
-            target._dash_cd_meter = nil
-        end
-        target._dash_cd_clear = nil
-    end)
-
     -- Enter combat_lunge_start so client's ServerStateMatches() returns true.
     -- Teleport happens in animover when lunge_pre finishes.
     -- State exits via ontimeout -> idle.
@@ -441,6 +409,8 @@ AddComponentPostInit("playercontroller", function(self)
 		if is_client and pos and inst ~= nil and inst.sg ~= nil then
 			GLOBAL.SendModRPCToServer(GLOBAL.GetModRPC("owlette", "dash"), pos.x, pos.z)
 			self:CancelAOETargeting()
+			local cooldown = inst._flight_dash_cooldown or 8
+			inst._flight_dash_next_time = GLOBAL.GetTime() + cooldown
 			inst.sg:GoToState("combat_lunge_start", { targetpos = pos, weapon = inst })
 			end
 		return result
@@ -667,11 +637,9 @@ AddStategraphPostInit("wilson_client", function(sg)
     if not start_state then return end
     local _c_onexit = start_state.onexit
     start_state.onexit = function(inst)
-        if inst:HasTag("owlette") and inst.sg.statemem.owlette_can_exit then
-            inst.AnimState:SetBank("wilson")
-            inst.AnimState:PlayAnimation("idle_loop")
-            inst.AnimState:SetDeltaTimeMultiplier(1)
+        if inst:HasTag("owlette") then
             local rot_stomp = inst.Transform:GetRotation()
+            _c_onexit(inst)
             inst.owlette_rot_stomp = rot_stomp
             if not inst.owlette_stomp_task then
                 inst.owlette_stomp_task = inst:DoPeriodicTask(0, function()

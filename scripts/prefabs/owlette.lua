@@ -140,13 +140,13 @@ local function apply_flight_skill_effects(inst)
         end
     end
 
-    if TheWorld.ismastersim then
-        if has_flight_1 and TheSkillTree:IsActivated("owlette_flight_2", "owlette") then
-            inst._flight_dash_cooldown = 6
-        else
-            inst._flight_dash_cooldown = 8
-        end
+    if has_flight_1 and TheSkillTree:IsActivated("owlette_flight_2", "owlette") then
+        inst._flight_dash_cooldown = 6
+    else
+        inst._flight_dash_cooldown = 8
+    end
 
+    if TheWorld.ismastersim then
         local al = inst.components.aoeweapon_lunge
         if al ~= nil then
             if has_flight_1 and TheSkillTree:IsActivated("owlette_flight_3", "owlette") then
@@ -185,39 +185,6 @@ local function DoFlightDash(inst, doer, pos)
 	end
 	local cooldown = target._flight_dash_cooldown or 8
 	target._flight_dash_next_time = GetTime() + cooldown
-
-	if GLOBAL.TheWorld.ismastersim then
-		if target._dash_cd_meter then target._dash_cd_meter:Cancel() end
-		if target._dash_cd_clear then target._dash_cd_clear:Cancel() end
-		local max_meter = math.min(255, math.floor(cooldown * 10 + 0.5))
-		if target.player_classified then
-			target.player_classified.actionmetertime:set(max_meter)
-			target.player_classified.actionmeter:set(max_meter)
-		end
-		target._dash_cd_meter = target:DoPeriodicTask(0.1, function()
-			if not target:IsValid() then return end
-			if not target.player_classified then return end
-			local remaining = target._flight_dash_next_time - GetTime()
-			local val = math.max(0, math.min(255, math.floor(remaining * 10)))
-			target.player_classified.actionmeter:set(val)
-			if val <= 0 then
-				if target._dash_cd_meter then
-					target._dash_cd_meter:Cancel()
-					target._dash_cd_meter = nil
-				end
-			end
-		end)
-		target._dash_cd_clear = target:DoTaskInTime(cooldown, function()
-			if target:IsValid() and target.player_classified then
-				target.player_classified.actionmeter:set(0)
-			end
-			if target._dash_cd_meter then
-				target._dash_cd_meter:Cancel()
-				target._dash_cd_meter = nil
-			end
-			target._dash_cd_clear = nil
-		end)
-	end
 
 	target:PushEvent("combat_lunge", { targetpos = pos, weapon = inst })
 end
@@ -351,35 +318,18 @@ local common_postinit = function(inst)
 		inst._cd_ring:GetAnimState():SetMultColour(1, 0.55, 0.3, 1)
 		inst._cd_ring:Hide()
 
-		inst:DoPeriodicTask(0.05, function()
-			if not inst:IsValid() or not inst._cd_ring then return end
-			local pc = inst.player_classified
-			if not pc then return end
-			local am = pc.actionmeter
-			local amt = pc.actionmetertime
-			if not am or not amt then return end
-			local server_val = am:value()
-			local max_val = amt:value()
+	inst:DoPeriodicTask(0.05, function()
+		if not inst:IsValid() or not inst._cd_ring then return end
+		local remaining = inst._flight_dash_next_time and (inst._flight_dash_next_time - GetTime()) or 0
+		local cooldown = inst._flight_dash_cooldown or 8
 
-			if max_val and max_val > 0 then
-				if server_val > 0 then
-					if server_val ~= inst._cd_last_val then
-						inst._cd_last_val = server_val
-						inst._cd_last_time = GetTime()
-					end
-					local elapsed = GetTime() - inst._cd_last_time
-					local smooth_val = math.max(0, inst._cd_last_val - elapsed * 10)
-					inst._cd_ring:GetAnimState():SetPercent("progress", smooth_val / max_val)
-					inst._cd_ring:Show()
-				else
-					inst._cd_ring:Hide()
-					inst._cd_last_val = nil
-					inst._cd_last_time = nil
-				end
-			else
-				inst._cd_ring:Hide()
-			end
-		end)
+		if remaining > 0 and cooldown > 0 then
+			inst._cd_ring:GetAnimState():SetPercent("progress", remaining / cooldown)
+			inst._cd_ring:Show()
+		else
+			inst._cd_ring:Hide()
+		end
+	end)
 	end)
 end
 
