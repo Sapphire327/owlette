@@ -468,6 +468,11 @@ AddStategraphPostInit("wilson", function(sg)
                     local x, y, z = inst.Transform:GetWorldPosition()
                     local angle = -math.atan2(tz - z, tx - x) * 180 / math.pi
                     inst.Transform:SetRotation(angle)
+                    -- Apply flight_3 speed buff via onlungedfn
+                    local al = inst.components.aoeweapon_lunge
+                    if al ~= nil and al.onlungedfn ~= nil then
+                        al.onlungedfn(inst, inst, GLOBAL.Vector3(x, 0, z), GLOBAL.Vector3(tx, 0, tz))
+                    end
                     inst:DoTaskInTime(0.537 / speed, function()
                         if inst:IsValid() then
                             inst.Physics:Teleport(tx, 0, tz)

@@ -8,8 +8,8 @@ local assets =
 
 local ATTACK_PERIOD = 0.4
 local ATTACK_SPEED_BOOST = 0.9 -- claws_2: -15% period
-local BLEED_CHANCE_4 = 0.10
-local BLEED_CHANCE_5 = 0.15
+local BLEED_CHANCE_4 = 0.15
+local BLEED_CHANCE_5 = 0.20
 local BLEED_DAMAGE_4 = 10
 local BLEED_DAMAGE_5 = 15
 local BLEED_DURATION = 3
@@ -166,22 +166,22 @@ local function fn()
     inst.AnimState:SetBuild("claws_ground")
     inst.AnimState:PlayAnimation("anim")
 
-    inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem.imagename = "owlette_claws"
-    inst.components.inventoryitem.atlasname = "images/inventoryimages/owlette_claws.xml"
-
     MakeInventoryFloatable(inst, "small", 0.05, 0.95)
-
-    inst:AddComponent("equippable")
-    inst.components.equippable.equipslot = "hands"
-
-    inst:AddComponent("weapon")
 
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
         return inst
     end
+
+    inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem.imagename = "owlette_claws"
+    inst.components.inventoryitem.atlasname = "images/inventoryimages/owlette_claws.xml"
+
+    inst:AddComponent("equippable")
+    inst.components.equippable.equipslot = "hands"
+
+    inst:AddComponent("weapon")
 
     inst:AddComponent("inspectable")
 

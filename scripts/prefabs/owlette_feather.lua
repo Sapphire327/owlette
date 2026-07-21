@@ -22,11 +22,6 @@ local function fn()
     inst:AddTag("cattoy")
     inst:AddTag("birdfeather")
 
-    inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem.atlasname = "images/inventoryimages/owlette_feather.xml"
-    inst.components.inventoryitem.imagename = "owlette_feather"
-    inst.components.inventoryitem.nobounce = true
-
     MakeInventoryFloatable(inst, "small", 0.05, 0.95)
 
     inst.entity:SetPristine()
@@ -34,6 +29,11 @@ local function fn()
     if not TheWorld.ismastersim then
         return inst
     end
+
+    inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem.atlasname = "images/inventoryimages/owlette_feather.xml"
+    inst.components.inventoryitem.imagename = "owlette_feather"
+    inst.components.inventoryitem.nobounce = true
 
     inst:AddComponent("stackable")
     inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM
