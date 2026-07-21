@@ -1,5 +1,3 @@
-print("[OWLETTE_DEBUG] modmain.lua loaded successfully")
-
 PrefabFiles = {
 	"owlette",
 	"owlette_none",
@@ -280,14 +278,11 @@ end)
 -- These patches allow the player entity to host aoetargeting/aoespell for a RMB dash line
 -- ModRPC for dash: client sends target position, server teleports directly
 GLOBAL.AddModRPCHandler("owlette", "dash", function(player, pos_x, pos_z)
-    print("[OWLETTE_DEBUG] ModRPC dash received, player=", player, "pos=", pos_x, pos_z)
     local inst = player
     if inst == nil or not inst:IsValid() then
-        print("[OWLETTE_DEBUG] ModRPC: invalid inst, returning")
         return
     end
     if not inst:HasTag("aoeweapon_lunge") then
-        print("[OWLETTE_DEBUG] ModRPC: missing aoeweapon_lunge tag, returning")
         return
     end
     local target = inst
@@ -341,7 +336,6 @@ AddComponentPostInit("playercontroller", function(self)
 		if self.inst:HasTag("aoeweapon_lunge") then
 			-- Check skill directly, bypass component replication issues
 			local has_skill = GLOBAL.TheSkillTree ~= nil and GLOBAL.TheSkillTree:IsActivated("owlette_flight_1", "owlette")
-			print("[OWLETTE_DEBUG] HasAOETargeting: owlette, has_skill=", tostring(has_skill))
 			if has_skill then
 				local at = self.inst.components.aoetargeting
 				if at ~= nil then
@@ -373,7 +367,6 @@ AddComponentPostInit("playercontroller", function(self)
 		local at = self.inst.components.aoetargeting
 		if is_owlette then
 			local has_skill = GLOBAL.TheSkillTree ~= nil and GLOBAL.TheSkillTree:IsActivated("owlette_flight_1", "owlette")
-			print("[OWLETTE_DEBUG] TryAOETargeting: owlette, has_skill=", tostring(has_skill))
 			if not has_skill then
 				return false
 			end
@@ -443,11 +436,9 @@ AddComponentPostInit("playercontroller", function(self)
 		if is_client and down and self:IsAOETargeting() and inst ~= nil and inst:HasTag("aoeweapon_lunge")
 			and GLOBAL.TheSkillTree ~= nil and GLOBAL.TheSkillTree:IsActivated("owlette_flight_1", "owlette") then
 			pos = self:GetAOETargetingPos() or inst:GetPosition()
-			print("[OWLETTE_DEBUG] OnLeftClick: targeting active, pos=", pos)
 		end
 		local result = _OnLeftClick(self, down)
 		if is_client and pos and inst ~= nil and inst.sg ~= nil then
-			print("[OWLETTE_DEBUG] OnLeftClick: sending ModRPC dash pos=", pos)
 			GLOBAL.SendModRPCToServer(GLOBAL.GetModRPC("owlette", "dash"), pos.x, pos.z)
 			self:CancelAOETargeting()
 			inst.sg:GoToState("combat_lunge_start", { targetpos = pos, weapon = inst })
@@ -476,14 +467,12 @@ AddComponentPostInit("aoetargeting", function(self)
     end
 end)
 
-print("[OWLETTE_DEBUG] modmain.lua loaded successfully")
-
 -- Helper to add a state to both server and client SGs
 local function AddStateToBothSGs(state_def)
     local ok1, err1 = pcall(AddStategraphState, "SGwilson", state_def)
     local ok2, err2 = pcall(AddStategraphState, "SGwilson_client", state_def)
-    if not ok1 then print("[OWLETTE_DEBUG] AddStategraphState(SGwilson) error: " .. tostring(err1)) end
-    if not ok2 then print("[OWLETTE_DEBUG] AddStategraphState(SGwilson_client) error: " .. tostring(err2)) end
+    if not ok1 then print("AddStategraphState(SGwilson) error: " .. tostring(err1)) end
+    if not ok2 then print("AddStategraphState(SGwilson_client) error: " .. tostring(err2)) end
 end
 
 -- Modify combat_lunge_start on server SG: teleport + exit via timeout
@@ -501,18 +490,15 @@ AddStategraphPostInit("wilson", function(sg)
                     local x, y, z = inst.Transform:GetWorldPosition()
                     local angle = -math.atan2(tz - z, tx - x) * 180 / math.pi
                     inst.Transform:SetRotation(angle)
-                    print("[OWLETTE_DEBUG] SERVER set rotation=", angle, "target", tx, tz)
                     inst:DoTaskInTime(0.537 / speed, function()
                         if inst:IsValid() then
                             inst.Physics:Teleport(tx, 0, tz)
-                            print("[OWLETTE_DEBUG] SERVER teleported at anim end", tx, tz)
                         end
                     end)
                 end
                 inst.AnimState:SetDeltaTimeMultiplier(speed)
                 inst.sg.statemem.owlette_dash_speed = speed
                 inst.sg:SetTimeout(0.6)
-                print("[OWLETTE_DEBUG] SERVER onenter combat_lunge_start")
             end
         end
 
@@ -520,7 +506,6 @@ AddStategraphPostInit("wilson", function(sg)
         start_state.onexit = function(inst)
             if inst:HasTag("owlette") then
                 inst.AnimState:SetDeltaTimeMultiplier(1)
-                print("[OWLETTE_DEBUG] SERVER onexit combat_lunge_start")
             end
             if _s_onexit then _s_onexit(inst) end
         end
@@ -528,7 +513,6 @@ AddStategraphPostInit("wilson", function(sg)
         local _s_ontimeout = start_state.ontimeout
         start_state.ontimeout = function(inst)
             if inst:HasTag("owlette") then
-                print("[OWLETTE_DEBUG] SERVER ontimeout -> idle")
                 inst.sg:GoToState("idle")
             elseif _s_ontimeout then
                 _s_ontimeout(inst)
@@ -552,146 +536,163 @@ AddStategraphPostInit("wilson", function(sg)
     end
 end)
 
--- Modify combat_lunge_start for owlette (client SG)
--- Client stays in this state while server runs combat_lunge_start -> idle
+-- Block sg_cancelmovementprediction during owlette combat_lunge_start
 AddStategraphPostInit("wilson_client", function(sg)
-    print("[OWLETTE_DEBUG] wilson_client postinit")
-    local start_state = sg.states["combat_lunge_start"]
-    print("[OWLETTE_DEBUG] client SG has combat_lunge_start:", start_state ~= nil)
-    if start_state then
-        local _c_onenter = start_state.onenter
-        start_state.onenter = function(inst, data)
-            if inst:HasTag("owlette") then
-                inst.components.locomotor:Stop()
-                -- Set rotation BEFORE bank/animation change to avoid override
-                if data ~= nil and data.targetpos ~= nil then
-                    local tp = data.targetpos
-                    local x, y, z = inst.Transform:GetWorldPosition()
-                    local angle_atan = -math.atan2(tp.z - z, tp.x - x) * 180 / math.pi
-                    inst.Transform:SetRotation(angle_atan)
-                    print("[OWLETTE_DEBUG] CLIENT set rotation=", angle_atan)
-                else
-                    print("[OWLETTE_DEBUG] CLIENT no targetpos data")
-                end
-                inst.AnimState:SetBank("owlette")
-                inst.AnimState:PlayAnimation("lunge_pre")
-                local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
-                inst.AnimState:SetDeltaTimeMultiplier(speed)
-                inst.sg.statemem.owlette_dash_speed = speed
-                inst.sg.statemem.owlette_can_exit = false
-                inst:ClearBufferedAction()
-                print("[OWLETTE_DEBUG] CLIENT onenter combat_lunge_start")
-                inst:DoTaskInTime(0.12, function()
-                    if inst:IsValid() and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
-                        inst.sg.statemem.owlette_can_exit = true
-                        print("[OWLETTE_DEBUG] CLIENT can_exit now true")
+    for i, evt in ipairs(sg.events) do
+        if type(evt) == "table" and evt.event == "sg_cancelmovementprediction" then
+            local orig_fn = evt.fn
+            evt.fn = function(inst, ...)
+                if inst:HasTag("owlette") then
+                    local st = inst.sg and inst.sg.currentstate
+                    local st_name = type(st) == "table" and st.name or tostring(st)
+                    if st_name == "combat_lunge_start" or inst.owlette_rot_stomp ~= nil then
+                        return
                     end
-                end)
-            else
-                _c_onenter(inst)
-            end
-        end
-
-        local _c_onexit = start_state.onexit
-        start_state.onexit = function(inst)
-            if inst:HasTag("owlette") then
-                inst.AnimState:SetBank("wilson")
-                inst.AnimState:SetDeltaTimeMultiplier(1)
-                print("[OWLETTE_DEBUG] CLIENT onexit combat_lunge_start")
-            end
-            if _c_onexit then _c_onexit(inst) end
-        end
-
-        -- onupdate: block FlattenMovementPrediction; exit only after grace period
-        local _c_onupdate = start_state.onupdate
-        start_state.onupdate = function(inst)
-            if inst:HasTag("owlette") then
-                if inst.sg:ServerStateMatches() then
-                    print("[OWLETTE_DEBUG] CLIENT in sync, staying")
-                    return
                 end
-                print("[OWLETTE_DEBUG] CLIENT not in sync, can_exit=", tostring(inst.sg.statemem.owlette_can_exit), "buf=", tostring(inst.bufferedaction ~= nil))
-                if inst.sg.statemem.owlette_can_exit and inst.bufferedaction == nil then
-                    print("[OWLETTE_DEBUG] CLIENT exit via onupdate")
-                    inst.sg:GoToState("idle")
+                return orig_fn(inst, ...)
+            end
+            break
+        end
+    end
+end)
+
+-- Modify combat_lunge_start for owlette (client SG)
+AddStategraphPostInit("wilson_client", function(sg)
+    local start_state = sg.states["combat_lunge_start"]
+    if not start_state then return end
+
+    local _c_onenter = start_state.onenter
+    start_state.onenter = function(inst, data)
+        if inst:HasTag("owlette") then
+            inst.components.locomotor:Stop()
+            if data ~= nil and data.targetpos ~= nil then
+                local dir = inst:GetAngleToPoint(data.targetpos)
+                if dir then
+                    inst.Transform:SetRotation(dir)
                 end
+            end
+            inst.AnimState:SetBank("owlette")
+            inst.AnimState:PlayAnimation("lunge_pre")
+            local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
+            inst.AnimState:SetDeltaTimeMultiplier(speed)
+            inst.sg.statemem.owlette_can_exit = false
+            inst:ClearBufferedAction()
+            inst:DoTaskInTime(0.12, function()
+                if inst:IsValid() and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
+                    inst.sg.statemem.owlette_can_exit = true
+                end
+            end)
+        else
+            _c_onenter(inst)
+        end
+    end
+
+    local _c_onexit = start_state.onexit
+    start_state.onexit = function(inst)
+        if inst:HasTag("owlette") then
+            inst.AnimState:SetBank("wilson")
+            inst.AnimState:PlayAnimation("idle_loop")
+            inst.AnimState:SetDeltaTimeMultiplier(1)
+        end
+        if _c_onexit then _c_onexit(inst) end
+    end
+
+    local _c_onupdate = start_state.onupdate
+    start_state.onupdate = function(inst)
+        if inst:HasTag("owlette") then
+            if inst.sg:ServerStateMatches() then
                 return
             end
-            if _c_onupdate then _c_onupdate(inst) end
-        end
-
-        -- Dump all events for debugging
-        print("[OWLETTE_DEBUG] combat_lunge_start events dump:")
-        if start_state.events then
-            for i, evt in ipairs(start_state.events) do
-                print("[OWLETTE_DEBUG]   event " .. i .. ": " .. tostring(evt.event) .. " fn=" .. tostring(evt.fn))
+            if inst.sg.statemem.owlette_can_exit and inst.bufferedaction == nil then
+                inst.sg:GoToState("idle")
             end
+            return
         end
-        if start_state.timeline then
-            print("[OWLETTE_DEBUG]   timeline entries: " .. #start_state.timeline)
-            for i, te in ipairs(start_state.timeline) do
-                local fn = te[2] or te.fn
-                print("[OWLETTE_DEBUG]     timeline[" .. i .. "] time=" .. tostring(te[1] or te.time) .. " fn=" .. tostring(fn))
-                if fn then
-                    local new_fn = function(inst, ...)
-                        if inst:HasTag("owlette") and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
-                            print("[OWLETTE_DEBUG] timeline blocked: time=" .. tostring(te[1] or te.time))
+        if _c_onupdate then _c_onupdate(inst) end
+    end
+
+    if start_state.events then
+        for i, evt in ipairs(start_state.events) do
+            if type(evt) == "table" then
+                local orig_fn = evt.fn
+                if evt.event == "animover" then
+                    evt.fn = function(inst, data)
+                        if inst:HasTag("owlette") and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
                             return
                         end
-                        return fn(inst, ...)
+                        return orig_fn(inst, data)
                     end
-                    te[2] = new_fn
-                    te.fn = new_fn
+                elseif evt.event == "combat_lunge" then
+                    evt.fn = function(inst, data)
+                        if inst:HasTag("owlette") and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
+                            return
+                        end
+                        return orig_fn(inst, data)
+                    end
                 end
             end
         end
+    end
 
-        -- Intercept sg_cancelmovementprediction to prevent early exit after teleport
-        for i, evt in ipairs(sg.events) do
-            if evt.event == "sg_cancelmovementprediction" and evt.fn then
-                local orig_fn = evt.fn
-                evt.fn = function(inst, ...)
+    if start_state.timeline then
+        for i, te in ipairs(start_state.timeline) do
+            local fn = te[2] or te.fn
+            if fn then
+                local new_fn = function(inst, ...)
                     if inst:HasTag("owlette") and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
                         return
                     end
-                    return orig_fn(inst, ...)
+                    return fn(inst, ...)
                 end
-                print("[OWLETTE_DEBUG] blocked sg_cancelmovementprediction for owlette")
+                te[2] = new_fn
+                te.fn = new_fn
             end
         end
+    end
 
-		-- Override vanilla events in this state for owlette
-		if start_state.events then
-			for i, evt in ipairs(start_state.events) do
-				if type(evt) == "table" then
-					local orig_fn = evt.fn
-					if evt.event == "animover" then
-						evt.fn = function(inst, data)
-							if inst:HasTag("owlette") and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
-								return
-							end
-							return orig_fn(inst, data)
-						end
-					elseif evt.event == "combat_lunge" then
-						evt.fn = function(inst, data)
-							if inst:HasTag("owlette") and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
-								return
-							end
-							return orig_fn(inst, data)
-						end
-					end
-				end
-			end
-		end
+    local _c_ontimeout = start_state.ontimeout
+    start_state.ontimeout = function(inst)
+        if inst:HasTag("owlette") then
+            inst:ClearBufferedAction()
+            inst.sg:GoToState("idle")
+        elseif _c_ontimeout then
+            _c_ontimeout(inst)
+        end
+    end
+end)
 
-		local _c_ontimeout = start_state.ontimeout
-        start_state.ontimeout = function(inst)
-            if inst:HasTag("owlette") then
-                print("[OWLETTE_DEBUG] CLIENT ontimeout")
-                inst:ClearBufferedAction()
-                inst.sg:GoToState("idle")
+-- Log rotation after dash to debug flip
+AddStategraphPostInit("wilson_client", function(sg)
+    local start_state = sg.states["combat_lunge_start"]
+    if not start_state then return end
+    local _c_onexit = start_state.onexit
+    start_state.onexit = function(inst)
+        if inst:HasTag("owlette") and inst.sg.statemem.owlette_can_exit then
+            inst.AnimState:SetBank("wilson")
+            inst.AnimState:PlayAnimation("idle_loop")
+            inst.AnimState:SetDeltaTimeMultiplier(1)
+            local rot_stomp = inst.Transform:GetRotation()
+            inst.owlette_rot_stomp = rot_stomp
+            if not inst.owlette_stomp_task then
+                inst.owlette_stomp_task = inst:DoPeriodicTask(0, function()
+                    if not inst:IsValid() then return end
+                    if inst.owlette_rot_stomp == nil then
+                        if inst.owlette_stomp_task then
+                            inst.owlette_stomp_task:Cancel()
+                            inst.owlette_stomp_task = nil
+                        end
+                        return
+                    end
+                    inst.Transform:SetRotation(inst.owlette_rot_stomp)
+                end)
             end
-            if _c_ontimeout then _c_ontimeout(inst) end
+            inst:DoTaskInTime(0.2, function()
+                if inst:IsValid() then
+                    inst.owlette_rot_stomp = nil
+                end
+            end)
+        else
+            if _c_onexit then _c_onexit(inst) end
         end
     end
 end)
