@@ -131,8 +131,8 @@ local SKILLS = {
         title = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_1_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_1_DESC,
         pos = {0, 1},
-        group = "night_vision",
-        tags = {"night_vision"},
+        group = "night_advantage",
+        tags = {"night_advantage"},
         root = true,
         defaultfocus = true,
         connects = {"owlette_hunting_1", "owlette_claws_1", "owlette_flight_1", "owlette_feathers_1", "owlette_nightvision_2"},
@@ -143,8 +143,8 @@ local SKILLS = {
         title = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_2_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_2_DESC,
         pos = {0, 110},
-        group = "night_vision",
-        tags = {"night_vision"},
+        group = "night_advantage",
+        tags = {"night_advantage"},
         connects = {"owlette_nightvision_3"},
         onactivate = function(inst, fromload)
             if not TheWorld.ismastersim then return end
@@ -165,8 +165,8 @@ local SKILLS = {
         title = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_3_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_3_DESC,
         pos = {0, 160},
-        group = "night_vision",
-        tags = {"night_vision"},
+        group = "night_advantage",
+        tags = {"night_advantage"},
         connects = {"owlette_nightvision_4"},
         onactivate = function(inst, fromload)
             if not TheWorld.ismastersim then return end
@@ -187,8 +187,8 @@ local SKILLS = {
         title = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_4_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_4_DESC,
         pos = {0, 210},
-        group = "night_vision",
-        tags = {"night_vision"},
+        group = "night_advantage",
+        tags = {"night_advantage"},
         onactivate = function(inst, fromload)
             if not TheWorld.ismastersim then return end
             inst:AddTag("owlette_nightvision_4")
@@ -506,7 +506,7 @@ local SKILLS = {
 local ORDERS = {
     {"hunting",      {-220, 220}},
     {"claws",        { -75, 220}},
-    {"night_vision", {   0, 220}},
+    {"night_advantage", {   0, 220}},
     {"flight",       {  75, 220}},
     {"feathers",     { 220, 220}},
 }

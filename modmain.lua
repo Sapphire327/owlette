@@ -705,14 +705,13 @@ AddStategraphPostInit("wilson", function(sg)
 end)
 
 -- Night Vision branch: Night Snack (nightvision_4) - food gives 1.5x stats at night/dusk
-AddComponentPostInit("eater", function(self)
-    local _ApplyEffects = self.ApplyEffects
-    self.ApplyEffects = function(self, food, ...)
-        _ApplyEffects(self, food, ...)
-        local inst = self.inst
+AddPrefabPostInit("owlette", function(inst)
+    if not GLOBAL.TheWorld.ismastersim then return end
+    inst:ListenForEvent("oneat", function(inst, data)
         if not inst:HasTag("owlette_nightvision_4") then return end
-        if not (TheWorld.state.isnight or TheWorld.state.isdusk) then return end
-        if not food or not food.components.edible then return end
+        if not (GLOBAL.TheWorld.state.isnight or GLOBAL.TheWorld.state.isdusk) then return end
+        local food = data and data.food
+        if not food or not food.components or not food.components.edible then return end
 
         local health = food.components.edible:GetHealth(inst)
         local hunger = food.components.edible:GetHunger(inst)
@@ -727,7 +726,7 @@ AddComponentPostInit("eater", function(self)
         if sanity and sanity > 0 then
             inst.components.sanity:DoDelta(sanity * 0.5)
         end
-    end
+    end)
 end)
 
 
