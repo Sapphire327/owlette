@@ -118,11 +118,26 @@ local function onphasechange(inst, phase)
     apply_phase_modifiers(inst)
     update_dapperness(inst)
     update_nightvision(inst)
+    -- Restore night vision from saved state on server when it gets dark
+    if TheWorld.ismastersim and inst._owlette_nv_active then
+        local is_dark = TheWorld.state.isnight or TheWorld.state.isdusk or TheWorld.state.iscave
+        if is_dark and inst.components.grue ~= nil then
+            inst.components.grue:AddImmunity("owlette_nightvision_rpc")
+            inst:PushEvent("nightvision", true)
+        end
+    end
 end
 
 local function onbecamehuman(inst)
     apply_phase_modifiers(inst)
     update_dapperness(inst)
+    if TheWorld.ismastersim and inst._owlette_nv_active then
+        local is_dark = TheWorld.state.isnight or TheWorld.state.isdusk or TheWorld.state.iscave
+        if is_dark and inst.components.grue ~= nil then
+            inst.components.grue:AddImmunity("owlette_nightvision_rpc")
+            inst:PushEvent("nightvision", true)
+        end
+    end
 end
 
 local function onbecameghost(inst)
@@ -134,7 +149,15 @@ local function onshelteredchange(inst)
     update_dapperness(inst)
 end
 
-local function onload(inst)
+local function onsave(inst, data)
+    if data == nil then return end
+    -- Persist night vision state across saves
+    if inst._owlette_nv_active ~= nil then
+        data.owlette_nv_active = inst._owlette_nv_active
+    end
+end
+
+local function onload(inst, data)
     inst:ListenForEvent("ms_respawnedfromghost", onbecamehuman)
     inst:ListenForEvent("ms_becameghost", onbecameghost)
 
@@ -143,6 +166,17 @@ local function onload(inst)
     else
         apply_phase_modifiers(inst)
         update_dapperness(inst)
+
+        -- Restore night vision immunity from saved data
+        if data and data.owlette_nv_active then
+            inst._owlette_nv_active = true
+            if inst.components.grue ~= nil then
+                if TheWorld.state.isnight or TheWorld.state.isdusk or TheWorld.state.iscave then
+                    inst.components.grue:AddImmunity("owlette_nightvision_rpc")
+                    inst:PushEvent("nightvision", true)
+                end
+            end
+        end
     end
 
     inst.owlette_feather_day = inst.owlette_feather_day or 0
@@ -402,7 +436,8 @@ local master_postinit = function(inst)
 	inst._flight_dash_cooldown = 8
 	inst._flight_dash_next_time = 0
 
-	inst.OnLoad = onload
+	inst.OnSave = onsave
+    inst.OnLoad = onload
     inst.OnNewSpawn = onload
 
     -- Sync skill effects across shards

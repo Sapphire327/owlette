@@ -567,8 +567,7 @@ AddStategraphPostInit("wilson_client", function(sg)
                     inst.Transform:SetRotation(dir)
                 end
             end
-            inst.AnimState:SetBank("owlette")
-            inst.AnimState:PlayAnimation("lunge_pre")
+            inst.AnimState:PlayAnimation("jump_pre")
             local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
             inst.AnimState:SetDeltaTimeMultiplier(speed)
             inst.sg.statemem.owlette_can_exit = false
@@ -586,8 +585,6 @@ AddStategraphPostInit("wilson_client", function(sg)
     local _c_onexit = start_state.onexit
     start_state.onexit = function(inst)
         if inst:HasTag("owlette") then
-            inst.AnimState:SetBank("wilson")
-            inst.AnimState:PlayAnimation("idle_loop")
             inst.AnimState:SetDeltaTimeMultiplier(1)
         end
         if _c_onexit then _c_onexit(inst) end
