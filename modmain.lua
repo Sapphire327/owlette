@@ -68,7 +68,7 @@ local lang = GetModConfigData("language")
 local L = require("owlette_strings")[lang]
 
 AddCharacterRecipe("owlette_claws",
-    { Ingredient("flint", 2), Ingredient("twigs", 4), Ingredient("owlette_feather", 2) },
+    { Ingredient("houndstooth", 2), Ingredient("rope", 1), Ingredient("owlette_feather", 2) },
     { SCIENCE = 1 },
     {
         builder_tag = "owlette",
@@ -106,8 +106,6 @@ STRINGS.SKILLTREE.OWLETTE = L.SKILLTREE
 
 -- Skill tree registration
 Assets = Assets or {}
-table.insert(Assets, Asset("ATLAS", "images/skilltree/owlette_icons.xml"))
-table.insert(Assets, Asset("IMAGE", "images/skilltree/owlette_icons.tex"))
 
 local skilltree_defs = require("prefabs/skilltree_defs")
 local owlette_skilltree = require("prefabs/skilltree_owlette")
@@ -116,7 +114,9 @@ skilltree_defs.CreateSkillTreeFor("owlette", owlette_skilltree.skills)
 skilltree_defs.SKILLTREE_ORDERS["owlette"] = owlette_skilltree.orders
 
 for skill_name, _ in pairs(owlette_skilltree.skills) do
-	GLOBAL.RegisterSkilltreeIconsAtlas("images/skilltree/owlette_icons.xml", skill_name .. ".tex")
+    table.insert(Assets, Asset("ATLAS", "images/skilltree/" .. skill_name .. ".xml"))
+    table.insert(Assets, Asset("IMAGE", "images/skilltree/" .. skill_name .. ".tex"))
+    GLOBAL.RegisterSkilltreeIconsAtlas("images/skilltree/" .. skill_name .. ".xml", skill_name .. ".tex")
 end
 
 table.insert(Assets, Asset("ATLAS", "images/skilltree/owlette_bg.xml"))
@@ -274,15 +274,15 @@ AddComponentAction("SCENE", "spawner", function(inst, doer, actions, right)
     end
 end)
 
--- Night vision RPC: client syncs skill state to server (skill tree data doesn't sync properly)
-GLOBAL.AddModRPCHandler("owlette", "nightvision_sync", function(player, active)
+-- Night advantage RPC: client syncs skill state to server (skill tree data doesn't sync properly)
+GLOBAL.AddModRPCHandler("owlette", "night_advantage_sync", function(player, active)
     if player == nil or not player:IsValid() then return end
     if player.components.grue == nil then return end
     if active then
-        player.components.grue:AddImmunity("owlette_nightvision_rpc")
+        player.components.grue:AddImmunity("owlette_night_advantage_rpc")
         player:PushEvent("nightvision", true)
     else
-        player.components.grue:RemoveImmunity("owlette_nightvision_rpc")
+        player.components.grue:RemoveImmunity("owlette_night_advantage_rpc")
         player:PushEvent("nightvision", false)
     end
 end)
@@ -418,17 +418,19 @@ AddComponentPostInit("playercontroller", function(self)
 		local inst = self.inst
 		local is_client = not (GLOBAL.TheWorld and GLOBAL.TheWorld.ismastersim)
 		local pos
-		if is_client and down and self:IsAOETargeting() and inst ~= nil and inst:HasTag("aoeweapon_lunge")
+		if down and self:IsAOETargeting() and inst ~= nil and inst:HasTag("aoeweapon_lunge")
 			and GLOBAL.TheSkillTree ~= nil and GLOBAL.TheSkillTree:IsActivated("owlette_flight_1", "owlette") then
 			pos = self:GetAOETargetingPos() or inst:GetPosition()
 		end
 		local result = _OnLeftClick(self, down)
-		if is_client and pos and inst ~= nil and inst.sg ~= nil
+		if pos and inst ~= nil and inst.sg ~= nil
 			and GLOBAL.TheWorld ~= nil and GLOBAL.TheWorld.Map ~= nil
 			and GLOBAL.TheWorld.Map:CanCastAtPoint(pos, false, false, 0) then
-			GLOBAL.SendModRPCToServer(GLOBAL.GetModRPC("owlette", "dash"), pos.x, pos.z)
-			self:CancelAOETargeting()
 			local cooldown = inst._flight_dash_cooldown or 8
+			if is_client then
+				GLOBAL.SendModRPCToServer(GLOBAL.GetModRPC("owlette", "dash"), pos.x, pos.z)
+			end
+			self:CancelAOETargeting()
 			inst._flight_dash_next_time = GLOBAL.GetTime() + cooldown
 			inst.sg:GoToState("combat_lunge_start", { targetpos = pos, weapon = inst })
 		elseif is_client and pos then
@@ -474,6 +476,15 @@ AddStategraphPostInit("wilson", function(sg)
         start_state.onenter = function(inst, data)
             _s_onenter(inst, data)
             if inst:HasTag("owlette") then
+                inst.components.locomotor:Stop()
+                        inst.AnimState:SetDeltaTimeMultiplier(0.6)
+                inst.AnimState:PlayAnimation("jump_pre")
+                inst:DoTaskInTime(0.15, function()
+                    if inst:IsValid() then
+                        inst.AnimState:SetDeltaTimeMultiplier(0)
+                    end
+                end)
+                inst:ClearBufferedAction()
                 local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
                 -- Set rotation BEFORE animation speed change
                 if data ~= nil and data.targetpos ~= nil then
@@ -486,13 +497,12 @@ AddStategraphPostInit("wilson", function(sg)
                     if al ~= nil and al.onlungedfn ~= nil then
                         al.onlungedfn(inst, inst, GLOBAL.Vector3(x, 0, z), GLOBAL.Vector3(tx, 0, tz))
                     end
-                    inst:DoTaskInTime(0.537 / speed, function()
+                    inst:DoTaskInTime(0.45 / speed, function()
                         if inst:IsValid() then
                             inst.Physics:Teleport(tx, 0, tz)
                         end
                     end)
                 end
-                inst.AnimState:SetDeltaTimeMultiplier(speed)
                 inst.sg.statemem.owlette_dash_speed = speed
                 inst.sg:SetTimeout(0.6)
             end
@@ -526,6 +536,22 @@ AddStategraphPostInit("wilson", function(sg)
                         end
                         return orig_fn(inst, data)
                     end
+                end
+            end
+        end
+
+        if start_state.timeline then
+            for i, te in ipairs(start_state.timeline) do
+                local fn = te[2] or te.fn
+                if fn then
+                    local new_fn = function(inst, ...)
+                        if inst:HasTag("owlette") and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
+                            return
+                        end
+                        return fn(inst, ...)
+                    end
+                    te[2] = new_fn
+                    te.fn = new_fn
                 end
             end
         end
@@ -568,8 +594,12 @@ AddStategraphPostInit("wilson_client", function(sg)
                 end
             end
             inst.AnimState:PlayAnimation("jump_pre")
+            inst:DoTaskInTime(0.15, function()
+                if inst:IsValid() then
+                    inst.AnimState:SetDeltaTimeMultiplier(0)
+                end
+            end)
             local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
-            inst.AnimState:SetDeltaTimeMultiplier(speed)
             inst.sg.statemem.owlette_can_exit = false
             inst:ClearBufferedAction()
             inst:DoTaskInTime(0.12, function()
@@ -708,7 +738,7 @@ end)
 AddPrefabPostInit("owlette", function(inst)
     if not GLOBAL.TheWorld.ismastersim then return end
     inst:ListenForEvent("oneat", function(inst, data)
-        if not inst:HasTag("owlette_nightvision_4") then return end
+        if not inst:HasTag("owlette_night_advantage_4") then return end
         if not (GLOBAL.TheWorld.state.isnight or GLOBAL.TheWorld.state.isdusk) then return end
         local food = data and data.food
         if not food or not food.components or not food.components.edible then return end
@@ -727,6 +757,15 @@ AddPrefabPostInit("owlette", function(inst)
             inst.components.sanity:DoDelta(sanity * 0.5)
         end
     end)
+end)
+
+-- Suppress sound for empty speech strings (night vision skills suppress darkness/light lines)
+AddComponentPostInit("talker", function(self)
+    local _Say = self.Say
+    self.Say = function(self, str, ...)
+        if str == nil or str == "" then return end
+        return _Say(self, str, ...)
+    end
 end)
 
 

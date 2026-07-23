@@ -293,8 +293,9 @@ return {
     ANNOUNCE_RUINS_RESET = "All the monsters came back!",
     ANNOUNCE_SNARED = "Sharp! Sharp bones!!",
     ANNOUNCE_REPELLED = "It's shielded!",
-	ANNOUNCE_ENTER_DARK = "It's so dark!",
-	ANNOUNCE_ENTER_LIGHT = "I can see again!",
+	ANNOUNCE_ENTER_DARK = "",
+	ANNOUNCE_TOO_DARK = "",
+	ANNOUNCE_ENTER_LIGHT = "",
 	ANNOUNCE_FREEDOM = "I'm free! I'm finally free!",
 	ANNOUNCE_HIGHRESEARCH = "I feel so smart now!",
 	ANNOUNCE_HOUNDS = "Did you hear that?",
@@ -2993,7 +2994,7 @@ return {
     },
 
     DESCRIBE_GENERIC = "It's a... thing.",
-    DESCRIBE_TOODARK = "It's too dark to see!",
+    DESCRIBE_TOODARK = "",
     DESCRIBE_SMOLDERING = "That thing is about to catch fire.",
     EAT_FOOD =
     {

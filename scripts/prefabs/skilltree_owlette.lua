@@ -127,7 +127,7 @@ local SKILLS = {
     },
 
     -- 🌙 NIGHT VISION BRANCH (hub at bottom, central column)
-    owlette_nightvision_1 = {
+    owlette_night_advantage_1 = {
         title = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_1_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_1_DESC,
         pos = {0, 1},
@@ -135,55 +135,55 @@ local SKILLS = {
         tags = {"night_advantage"},
         root = true,
         defaultfocus = true,
-        connects = {"owlette_hunting_1", "owlette_claws_1", "owlette_flight_1", "owlette_feathers_1", "owlette_nightvision_2"},
+        connects = {"owlette_hunting_1", "owlette_claws_1", "owlette_flight_1", "owlette_feathers_1", "owlette_night_advantage_2"},
         onactivate = function(inst, fromload) end,
         ondeactivate = function(inst, fromload) end,
     },
-    owlette_nightvision_2 = {
+    owlette_night_advantage_2 = {
         title = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_2_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_2_DESC,
         pos = {0, 110},
         group = "night_advantage",
         tags = {"night_advantage"},
-        connects = {"owlette_nightvision_3"},
+        connects = {"owlette_night_advantage_3"},
         onactivate = function(inst, fromload)
             if not TheWorld.ismastersim then return end
-            inst:AddTag("owlette_nightvision_2")
+            inst:AddTag("owlette_night_advantage_2")
             if not fromload and inst._apply_phase_modifiers then
                 inst._apply_phase_modifiers(inst)
             end
         end,
         ondeactivate = function(inst, fromload)
             if not TheWorld.ismastersim then return end
-            inst:RemoveTag("owlette_nightvision_2")
+            inst:RemoveTag("owlette_night_advantage_2")
             if not fromload and inst._apply_phase_modifiers then
                 inst._apply_phase_modifiers(inst)
             end
         end,
     },
-    owlette_nightvision_3 = {
+    owlette_night_advantage_3 = {
         title = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_3_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_3_DESC,
         pos = {0, 160},
         group = "night_advantage",
         tags = {"night_advantage"},
-        connects = {"owlette_nightvision_4"},
+        connects = {"owlette_night_advantage_4"},
         onactivate = function(inst, fromload)
             if not TheWorld.ismastersim then return end
-            inst:AddTag("owlette_nightvision_3")
+            inst:AddTag("owlette_night_advantage_3")
             if not fromload and inst._apply_phase_modifiers then
                 inst._apply_phase_modifiers(inst)
             end
         end,
         ondeactivate = function(inst, fromload)
             if not TheWorld.ismastersim then return end
-            inst:RemoveTag("owlette_nightvision_3")
+            inst:RemoveTag("owlette_night_advantage_3")
             if not fromload and inst._apply_phase_modifiers then
                 inst._apply_phase_modifiers(inst)
             end
         end,
     },
-    owlette_nightvision_4 = {
+    owlette_night_advantage_4 = {
         title = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_4_TITLE,
         desc = STRINGS.SKILLTREE.OWLETTE.NIGHTVISION_4_DESC,
         pos = {0, 210},
@@ -191,11 +191,11 @@ local SKILLS = {
         tags = {"night_advantage"},
         onactivate = function(inst, fromload)
             if not TheWorld.ismastersim then return end
-            inst:AddTag("owlette_nightvision_4")
+            inst:AddTag("owlette_night_advantage_4")
         end,
         ondeactivate = function(inst, fromload)
             if not TheWorld.ismastersim then return end
-            inst:RemoveTag("owlette_nightvision_4")
+            inst:RemoveTag("owlette_night_advantage_4")
         end,
     },
 
@@ -294,7 +294,7 @@ local SKILLS = {
         group = "flight",
         tags = {"flight"},
         connects = {"owlette_flight_2"},
-        must_have_one_of = { owlette_nightvision_1 = true },
+        must_have_one_of = { owlette_night_advantage_1 = true },
         onactivate = function(inst, fromload)
             if not TheWorld.ismastersim then return end
             inst.components.aoetargeting:SetEnabled(true)

@@ -1,8 +1,8 @@
 return {
     ru = {
-        CHARACTER_TITLES = "Будучи ночным созданием, Оулетта обретает наибольшую силу, когда луна стоит высоко в небе.",
+        CHARACTER_TITLES = "Охотник ночи",
         CHARACTER_NAMES = "Owlette",
-        CHARACTER_DESCRIPTIONS = "*Perk 1\n*Perk 2\n*Perk 3",
+        CHARACTER_DESCRIPTIONS = "*Отличный охотник на дичь\n*Может спать только днём\n*Предпочитает мясные блюда\n*Слабая днем",
         CHARACTER_QUOTES = "\"У-ууу\"",
         CHARACTER_SURVIVABILITY = "Slim",
 
@@ -74,9 +74,9 @@ return {
     },
 
     en = {
-        CHARACTER_TITLES = "A creature of the night, Owlette is strongest when the moon is high.",
+        CHARACTER_TITLES = "The night hunter",
         CHARACTER_NAMES = "Owlette",
-        CHARACTER_DESCRIPTIONS = "*Perk 1\n*Perk 2\n*Perk 3",
+        CHARACTER_DESCRIPTIONS = "*Excellent game hunter\n*Can only sleep during the day\n*Prefers meat dishes\n*Weak during the day",
         CHARACTER_QUOTES = "\"Hoot\"",
         CHARACTER_SURVIVABILITY = "Slim",
 
@@ -85,8 +85,8 @@ return {
 
         NAMES_OWLETTE_FEATHER = "Owl Feather",
         DESCRIBE_OWLETTE_FEATHER = "A soft feather from Owlette.",
-        NAMES_OWLETTE_CLAWS = "Talon Gauntlets",
-        DESCRIBE_OWLETTE_CLAWS = "Sharp owl talons.",
+        NAMES_OWLETTE_CLAWS = "Claws",
+        DESCRIBE_OWLETTE_CLAWS = "Sharp owl Claws.",
 
         SCRATCH_BURROW = "Lure",
         EMPTY_BURROW = "The burrow is empty.",
@@ -113,11 +113,11 @@ return {
             NIGHTVISION_4_DESC = "Food gives 1.5x more health, hunger, and sanity at night and dusk.",
 
             CLAWS_1_TITLE = "Sharpened Claws",
-            CLAWS_1_DESC = "Talon Gauntlets base damage increased to 38.",
+            CLAWS_1_DESC = "Claws base damage increased to 38.",
             CLAWS_2_TITLE = "Snap Strike",
-            CLAWS_2_DESC = "Claw attack speed increased by 15%.",
+            CLAWS_2_DESC = "Claws attack speed increased by 15%.",
             CLAWS_3_TITLE = "Polished Claws",
-            CLAWS_3_DESC = "Talon Gauntlets base damage increased to 42.",
+            CLAWS_3_DESC = "Claws base damage increased to 42.",
             CLAWS_4_TITLE = "Laceration",
             CLAWS_4_DESC = "10% chance to inflict bleed (10 DPS for 3 sec).",
             CLAWS_5_TITLE = "Deep Laceration",

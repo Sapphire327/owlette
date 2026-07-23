@@ -41,10 +41,10 @@ local function apply_phase_modifiers(inst)
         local spd = mods.speed
 
         if (phase == "night" or phase == "dusk") then
-            if inst:HasTag("owlette_nightvision_2") then
+            if inst:HasTag("owlette_night_advantage_2") then
                 spd = spd * 1.15
             end
-            if inst:HasTag("owlette_nightvision_3") then
+            if inst:HasTag("owlette_night_advantage_3") then
                 dmg = dmg * 1.15
             end
         end
@@ -69,39 +69,39 @@ local function update_dapperness(inst)
     end
 end
 
-local function update_nightvision(inst)
+local function update_night_advantage(inst)
 	if inst.components.playervision == nil then
-		print("[OWLETTE_NV] update_nightvision: playervision is NIL, returning")
+		print("[OWLETTE_NV] update_night_advantage: playervision is NIL, returning")
 		return
 	end
 	if TheSkillTree == nil then
-		print("[OWLETTE_NV] update_nightvision: TheSkillTree is NIL, returning")
+		print("[OWLETTE_NV] update_night_advantage: TheSkillTree is NIL, returning")
 		return
 	end
 
 	local is_dark = TheWorld.state.isnight or TheWorld.state.isdusk or TheWorld.state.iscave
-	local nv_has_skill = TheSkillTree:IsActivated("owlette_nightvision_1", "owlette")
+	local nv_has_skill = TheSkillTree:IsActivated("owlette_night_advantage_1", "owlette")
 	local fl_has_skill = TheSkillTree:IsActivated("owlette_flight_1", "owlette")
-	print("[OWLETTE_NV] update_nightvision: NV=" .. tostring(nv_has_skill) .. " FL=" .. tostring(fl_has_skill) .. " is_dark=" .. tostring(is_dark) .. " ismastersim=" .. tostring(TheWorld.ismastersim))
+	print("[OWLETTE_NV] update_night_advantage: NV=" .. tostring(nv_has_skill) .. " FL=" .. tostring(fl_has_skill) .. " is_dark=" .. tostring(is_dark) .. " ismastersim=" .. tostring(TheWorld.ismastersim))
 
 	local active = nv_has_skill and is_dark
 	if active then
 		inst.components.playervision:PushForcedNightVision(inst, 0, nil, true, nil, true)
-		print("[OWLETTE_NV] update_nightvision: PUSHED night vision")
+		print("[OWLETTE_NV] update_night_advantage: PUSHED night vision")
 	else
 		inst.components.playervision:PopForcedNightVision(inst)
-		print("[OWLETTE_NV] update_nightvision: POPPED night vision")
+		print("[OWLETTE_NV] update_night_advantage: POPPED night vision")
 	end
 
 	-- Sync to server via RPC (skill tree data isn't syncing, so the server doesn't know)
 	if not TheWorld.ismastersim then
-		SendModRPCToServer(GetModRPC("owlette", "nightvision_sync"), active)
+		SendModRPCToServer(GetModRPC("owlette", "night_advantage_sync"), active)
 	end
 end
 
 -- Server-side night vision is managed via RPC from client (skill tree data doesn't sync)
 -- No-op: client sends RPC with current state, which adds/removes grue immunity
-local function update_nightvision_server(inst)
+local function update_night_advantage_server(inst)
 end
 
 -- Fallback: heal darkness damage if RPC immunity is active on the server
@@ -109,7 +109,7 @@ local function onattacked(inst, data)
 	if data == nil or data.stimula ~= "darkness" then return end
 	if inst.components.grue == nil then return end
 	if inst.components.grue.immunity == nil then return end
-	if not inst.components.grue.immunity["owlette_nightvision_rpc"] then return end
+	if not inst.components.grue.immunity["owlette_night_advantage_rpc"] then return end
 	print("[OWLETTE_NV] onattacked: healing darkness damage=" .. tostring(data.damage))
 	inst.components.health:DoDelta(math.abs(data.damage or 8))
 end
@@ -117,12 +117,12 @@ end
 local function onphasechange(inst, phase)
     apply_phase_modifiers(inst)
     update_dapperness(inst)
-    update_nightvision(inst)
+    update_night_advantage(inst)
     -- Restore night vision from saved state on server when it gets dark
     if TheWorld.ismastersim and inst._owlette_nv_active then
         local is_dark = TheWorld.state.isnight or TheWorld.state.isdusk or TheWorld.state.iscave
         if is_dark and inst.components.grue ~= nil then
-            inst.components.grue:AddImmunity("owlette_nightvision_rpc")
+            inst.components.grue:AddImmunity("owlette_night_advantage_rpc")
             inst:PushEvent("nightvision", true)
         end
     end
@@ -134,7 +134,7 @@ local function onbecamehuman(inst)
     if TheWorld.ismastersim and inst._owlette_nv_active then
         local is_dark = TheWorld.state.isnight or TheWorld.state.isdusk or TheWorld.state.iscave
         if is_dark and inst.components.grue ~= nil then
-            inst.components.grue:AddImmunity("owlette_nightvision_rpc")
+            inst.components.grue:AddImmunity("owlette_night_advantage_rpc")
             inst:PushEvent("nightvision", true)
         end
     end
@@ -172,7 +172,7 @@ local function onload(inst, data)
             inst._owlette_nv_active = true
             if inst.components.grue ~= nil then
                 if TheWorld.state.isnight or TheWorld.state.isdusk or TheWorld.state.iscave then
-                    inst.components.grue:AddImmunity("owlette_nightvision_rpc")
+                    inst.components.grue:AddImmunity("owlette_night_advantage_rpc")
                     inst:PushEvent("nightvision", true)
                 end
             end
@@ -318,13 +318,13 @@ local common_postinit = function(inst)
 
 	-- Night vision skill (client-side)
 	inst:ListenForEvent("onactivateskill_client", function(_, data)
-		if data.skill and data.skill:find("owlette_nightvision") then
-			update_nightvision(inst)
+		if data.skill and data.skill:find("owlette_night_advantage") then
+			update_night_advantage(inst)
 		end
 	end)
 	inst:ListenForEvent("ondeactivateskill_client", function(_, data)
-		if data.skill and data.skill:find("owlette_nightvision") then
-			update_nightvision(inst)
+		if data.skill and data.skill:find("owlette_night_advantage") then
+			update_night_advantage(inst)
 		end
 	end)
 
@@ -361,11 +361,11 @@ local common_postinit = function(inst)
 	end)
 
 	-- Night vision phase watcher (client-side)
-	inst:WatchWorldState("phase", function() update_nightvision(inst) end)
+	inst:WatchWorldState("phase", function() update_night_advantage(inst) end)
 
 	-- Restore state on load
 	inst:DoTaskInTime(0, function()
-		update_nightvision(inst)
+		update_night_advantage(inst)
 		apply_flight_skill_effects(inst)
 	end)
 
