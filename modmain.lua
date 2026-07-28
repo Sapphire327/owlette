@@ -233,6 +233,7 @@ local ACTIONS = GLOBAL.ACTIONS
 local STRINGS = GLOBAL.STRINGS
 
 STRINGS.ACTIONS.SCRATCH_BURROW = L.SCRATCH_BURROW
+STRINGS.OWLETTE_EMPTY_BURROW = L.EMPTY_BURROW
 
 ACTIONS.SCRATCH_BURROW = AddAction("SCRATCH_BURROW", STRINGS.ACTIONS.SCRATCH_BURROW, function(act)
     local target = act.target
@@ -243,26 +244,21 @@ ACTIONS.SCRATCH_BURROW = AddAction("SCRATCH_BURROW", STRINGS.ACTIONS.SCRATCH_BUR
     if not spawner then return false end
 
     if not spawner.child or not spawner.child:IsValid() then
-        if doer.components.talker then
-            doer.components.talker:Say(L.EMPTY_BURROW)
+        if doer and doer:IsValid() and doer.components.talker then
+            doer.components.talker:Say(STRINGS.OWLETTE_EMPTY_BURROW)
         end
         return false
     end
 
-    local child = spawner.child
     spawner:SetQueueSpawning(false)
     spawner:ReleaseChild()
 
-    if child.components.locomotor then
+    local child = spawner.child
+    if child and child:IsValid() and child.components.locomotor then
         local angle = child:GetAngleToPoint(doer:GetPosition()) + 180
         if angle > 360 then angle = angle - 360 end
         child.components.locomotor:RunInDirection(angle)
     end
-    child:DoTaskInTime(3, function()
-        if child:IsValid() and child.components.locomotor then
-            child.components.locomotor:Stop()
-    end
-end)
 
     return true
 end)
@@ -461,11 +457,9 @@ AddComponentPostInit("aoetargeting", function(self)
 end)
 
 -- Helper to add a state to both server and client SGs
-local function AddStateToBothSGs(state_def)
-    local ok1, err1 = pcall(AddStategraphState, "SGwilson", state_def)
-    local ok2, err2 = pcall(AddStategraphState, "SGwilson_client", state_def)
-    if not ok1 then print("AddStategraphState(SGwilson) error: " .. tostring(err1)) end
-    if not ok2 then print("AddStategraphState(SGwilson_client) error: " .. tostring(err2)) end
+local function AddStateToBothSGs(statename, state_def)
+    AddStategraphState("SGwilson", statename, state_def)
+    AddStategraphState("SGwilson_client", statename, state_def)
 end
 
 -- Modify combat_lunge_start on server SG: teleport + exit via timeout
@@ -480,7 +474,7 @@ AddStategraphPostInit("wilson", function(sg)
                         inst.AnimState:SetDeltaTimeMultiplier(0.6)
                 inst.AnimState:PlayAnimation("jump_pre")
                 inst:DoTaskInTime(0.15, function()
-                    if inst:IsValid() then
+                    if inst:IsValid() and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
                         inst.AnimState:SetDeltaTimeMultiplier(0)
                     end
                 end)
@@ -595,7 +589,7 @@ AddStategraphPostInit("wilson_client", function(sg)
             end
             inst.AnimState:PlayAnimation("jump_pre")
             inst:DoTaskInTime(0.15, function()
-                if inst:IsValid() then
+                if inst:IsValid() and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
                     inst.AnimState:SetDeltaTimeMultiplier(0)
                 end
             end)
@@ -783,6 +777,18 @@ AddComponentPostInit("moisture", function(self)
     end
 end)
 
+-- Owlette gains half hunger from non-meat dishes (dietary restriction)
+AddComponentPostInit("edible", function(self)
+    local _GetHunger = self.GetHunger
+    self.GetHunger = function(self, eater)
+        local val = _GetHunger(self, eater)
+        if eater and eater:IsValid() and eater:HasTag("owlette") and self.inst and not self.inst:HasTag("meat") then
+            return val * 0.5
+        end
+        return val
+    end
+end)
+
 
 -- Claws attack speed boost (works for any character equipping owlette_claws)
 AddStategraphPostInit("wilson", function(sg)
@@ -818,5 +824,4 @@ AddStategraphPostInit("wilson", function(sg)
         end
     end
 end)
-
 
