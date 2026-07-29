@@ -236,19 +236,15 @@ STRINGS.ACTIONS.SCRATCH_BURROW = L.SCRATCH_BURROW
 STRINGS.OWLETTE_EMPTY_BURROW = L.EMPTY_BURROW
 
 ACTIONS.SCRATCH_BURROW = AddAction("SCRATCH_BURROW", STRINGS.ACTIONS.SCRATCH_BURROW, function(act)
-    print("[OWLETTE_SCRATCH] actionfn called, target=", act.target and act.target.prefab, "doer=", act.doer and act.doer.prefab)
     local target = act.target
     local doer = act.doer
-    if not target or not target:IsValid() then print("[OWLETTE_SCRATCH] invalid target"); return false end
-    if not doer or not doer:IsValid() then print("[OWLETTE_SCRATCH] invalid doer"); return false end
+    if not target or not target:IsValid() then return false end
+    if not doer or not doer:IsValid() then return false end
 
     local spawner = target.components.spawner
-    print("[OWLETTE_SCRATCH] spawner=", spawner)
-    if not spawner then print("[OWLETTE_SCRATCH] no spawner"); return false end
+    if not spawner then return false end
 
-    print("[OWLETTE_SCRATCH] child=", spawner.child, "IsOccupied=", spawner:IsOccupied())
     if spawner.child == nil then
-        print("[OWLETTE_SCRATCH] child nil")
         if doer.components.talker then
             doer.components.talker:Say(STRINGS.OWLETTE_EMPTY_BURROW)
         end
@@ -256,15 +252,12 @@ ACTIONS.SCRATCH_BURROW = AddAction("SCRATCH_BURROW", STRINGS.ACTIONS.SCRATCH_BUR
     end
 
     if not spawner:IsOccupied() then
-        print("[OWLETTE_SCRATCH] not occupied")
         return false
     end
 
-    print("[OWLETTE_SCRATCH] releasing")
     spawner:SetQueueSpawning(false)
     local child = spawner.child
     spawner:ReleaseChild()
-    print("[OWLETTE_SCRATCH] released", child)
 
     if child and child:IsValid() and child.components.locomotor then
         local angle = child:GetAngleToPoint(doer:GetPosition()) + 180
@@ -276,47 +269,24 @@ ACTIONS.SCRATCH_BURROW = AddAction("SCRATCH_BURROW", STRINGS.ACTIONS.SCRATCH_BUR
 end)
 
 AddComponentAction("SCENE", "spawner", function(inst, doer, actions, right)
-    print("[OWLETTE_SCRATCH] SCENE/spawner callback, inst=", inst and inst.prefab, "doer=", doer and doer.prefab, "hunting_3=", doer and doer:HasTag("owlette_hunting_3"))
     if doer:HasTag("owlette_hunting_3") and
        (inst.prefab == "rabbithole" or inst.prefab == "molehill") then
-        print("[OWLETTE_SCRATCH] adding SCRATCH_BURROW to actions for", inst.prefab)
         table.insert(actions, ACTIONS.SCRATCH_BURROW)
     end
 end)
 
--- Intercept PerformBufferedAction for SCRATCH_BURROW on server
-local _PerformBufferedAction = GLOBAL.EntityScript.PerformBufferedAction
-print("[OWLETTE_SCRATCH] EntityScript.PerformBufferedAction exists=", _PerformBufferedAction ~= nil)
-if _PerformBufferedAction then
-    GLOBAL.EntityScript.PerformBufferedAction = function(self)
-        local ba = self.bufferedaction
-        if ba and ba.action == ACTIONS.SCRATCH_BURROW then
-            print("[OWLETTE_SCRATCH] PerformBA intercept, target=", ba.target and ba.target.prefab, "self.prefab=", self.prefab)
-        end
-        return _PerformBufferedAction(self)
-    end
-else
-    print("[OWLETTE_SCRATCH] EntityScript.PerformBufferedAction NOT FOUND")
-end
-
 -- ModRPC: server executes SCRATCH_BURROW actionfn
 GLOBAL.AddModRPCHandler("owlette", "scratch_burrow", function(player, x, z)
-    print("[OWLETTE_SCRATCH] ModRPC handler, player=", player and player.prefab, "x=", x, "z=", z)
     if not player or not player:IsValid() then return end
     local target = nil
     local ents = GLOBAL.TheSim:FindEntities(x, 0, z, 5)
-    print("[OWLETTE_SCRATCH] FindEntities returned", #(ents or {}), "ents")
     for _, ent in ipairs(ents or {}) do
-        print("[OWLETTE_SCRATCH] nearby ent:", ent.prefab)
         if ent:IsValid() and (ent.prefab == "rabbithole") and ent.components and ent.components.spawner then
             target = ent
             break
         end
     end
-    if not target then
-        print("[OWLETTE_SCRATCH] ModRPC no target found near position")
-        return
-    end
+    if not target then return end
     local act = GLOBAL.BufferedAction(player, target, ACTIONS.SCRATCH_BURROW)
     if act then
         act:Do()
@@ -326,7 +296,6 @@ end)
 local _scratch_target = nil
 
 AddStategraphActionHandler("wilson_client", GLOBAL.ActionHandler(ACTIONS.SCRATCH_BURROW, function(inst, bufferedaction)
-    print("[OWLETTE_SCRATCH] client ActionHandler called, bufferedaction=", bufferedaction and bufferedaction.action)
     _scratch_target = bufferedaction and bufferedaction.target
     return "scratch_burrow"
 end))
@@ -355,7 +324,6 @@ AddStategraphState("wilson_client", GLOBAL.State{
         _scratch_target = nil
         if target and target:IsValid() then
             local pos = target:GetPosition()
-            print("[OWLETTE_SCRATCH] scratch_burrow_pst onenter, sending ModRPC for", target.prefab, "pos=", pos and pos.x, pos and pos.z)
             if pos then
                 GLOBAL.SendModRPCToServer(GLOBAL.GetModRPC("owlette", "scratch_burrow"), pos.x, pos.z)
             end
