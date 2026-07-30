@@ -208,7 +208,7 @@ AddBrainPostInit("birdbrain", function(self)
 end)
 
 -- Skill: Двойная добыча (Double Loot) - 50% chance to double loot from small creatures
-local SMALL_CREATURES = { "rabbit", "crow", "robin", "robin_winter", "canary", "frog", "spider", "mole", "catcoon" }
+local SMALL_CREATURES = { "rabbit", "crow", "robin", "robin_winter", "canary", "frog", "spider", "spider_warrior", "spider_hider", "spider_spitter", "spider_dropper", "spider_moon", "spider_water", "mole", "catcoon", "bat" }
 for _, prefab in ipairs(SMALL_CREATURES) do
     AddPrefabPostInit(prefab, function(inst)
         if not GLOBAL.TheWorld.ismastersim then return end
