@@ -403,6 +403,34 @@ local common_postinit = function(inst)
 		end
 	end)
 	end)
+
+	-- Claws visual overlay (client-side only, depends on camera angle)
+	if not TheNet:IsDedicated() then
+		inst:DoPeriodicTask(0.05, function()
+			if not inst:IsValid() then return end
+
+			local weapon = inst.components.inventory and inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
+			if not weapon and inst.replica and inst.replica.inventory then
+				weapon = inst.replica.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
+			end
+			if not weapon or weapon.prefab ~= "owlette_claws" then return end
+
+			local char_dir = inst.Transform:GetRotation()
+			local camera_rot = TheCamera:GetHeadingTarget()
+			local relative_dir = ((char_dir + camera_rot) % 360 + 360) % 360
+			if relative_dir >= 135 and relative_dir <= 225 then
+				inst.AnimState:OverrideSymbol("lantern_overlay", "claws", "swap_object")
+				inst.AnimState:Show("lantern_overlay")
+				inst.AnimState:HideSymbol("swap_object")
+			else
+				inst.AnimState:ClearOverrideSymbol("lantern_overlay")
+				inst.AnimState:Hide("lantern_overlay")
+				inst.AnimState:OverrideSymbol("swap_object", "claws", "swap_object")
+				inst.AnimState:ShowSymbol("swap_object")
+			end
+		end)
+	end
+
 end
 
 -- This initializes for the server only. Components are added here.

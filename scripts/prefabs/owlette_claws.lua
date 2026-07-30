@@ -15,10 +15,11 @@ local BLEED_DAMAGE_5 = 15
 local BLEED_DURATION = 3
 
 local function IsFacingAway(owner)
+    if TheCamera == nil then return false end
     local char_dir = owner.Transform:GetRotation()
     local camera_rot = TheCamera:GetHeadingTarget()
     local relative_dir = ((char_dir + camera_rot) % 360 + 360) % 360
-    return relative_dir >= 135 and relative_dir<=225
+    return relative_dir >= 135 and relative_dir <= 225
 end
 
 local function UpdateClawsVisual(inst)
@@ -79,16 +80,6 @@ local function StartBleed(target, dps, duration)
 end
 
 local function OnEquip(inst, owner)
-    UpdateClawsVisual(inst)
-
-    if not inst._facingtask then
-        inst._facingtask = inst:DoPeriodicTask(0.05, function()
-            if inst.components.inventoryitem and inst.components.inventoryitem:GetGrandOwner() then
-                UpdateClawsVisual(inst)
-            end
-        end)
-    end
-
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 
@@ -125,11 +116,6 @@ local function OnEquip(inst, owner)
 end
 
 local function OnUnequip(inst, owner)
-    if inst._facingtask then
-        inst._facingtask:Cancel()
-        inst._facingtask = nil
-    end
-
     owner.AnimState:ClearOverrideSymbol("lantern_overlay")
     owner.AnimState:ClearOverrideSymbol("swap_object")
     owner.AnimState:ClearOverrideSymbol("swap_shield")
