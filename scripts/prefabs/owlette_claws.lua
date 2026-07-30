@@ -80,6 +80,7 @@ local function StartBleed(target, dps, duration)
 end
 
 local function OnEquip(inst, owner)
+    UpdateClawsVisual(inst)
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 
