@@ -42,13 +42,13 @@ local SKILLS = {
                             if v.components.spawner ~= nil and v.components.spawner:IsOccupied() then
                                 highlight = true
                             end
-                        elseif v:HasTag("track") then
+                        elseif v:HasTag("track") or v.prefab == "dirtpile" then
                             highlight = true
                         end
                         if highlight then
                             current[v] = true
                             if not inst.owlette_hunting_targets[v] then
-                                if v:HasTag("track") then
+                                if v:HasTag("track") or v.prefab == "dirtpile" then
                                     v.AnimState:SetAddColour(0.25, 0.15, 0, 0)
                                 else
                                     v.AnimState:SetAddColour(0, 0.15, 0.25, 0)
