@@ -17,6 +17,11 @@ return {
         SCRATCH_BURROW = "Выманить",
         EMPTY_BURROW = "Нора пуста.",
 
+        ANNOUNCE_NONIGHTSLEEP = "Я могу спать только днём!",
+        ANNOUNCE_NONIGHTSLEEP_CAVE = "Здесь не поймёшь, день или ночь!",
+        ANNOUNCE_NONIGHTSIESTA = "Ночь для сна, а не для сиесты.",
+        ANNOUNCE_NONIGHTSIESTA_CAVE = "Вряд ли я смогу тут расслабиться.",
+
         SKILLTREE = {
             HUNTING_1_TITLE = "Охота",
             HUNTING_1_DESC = "занятые кроликом норы, будут подсвечены. Лучшая видимость следов коалослона",
@@ -90,6 +95,11 @@ return {
 
         SCRATCH_BURROW = "Lure",
         EMPTY_BURROW = "The burrow is empty.",
+
+        ANNOUNCE_NONIGHTSLEEP = "I can only sleep during the day!",
+        ANNOUNCE_NONIGHTSLEEP_CAVE = "I can't tell time down here!",
+        ANNOUNCE_NONIGHTSIESTA = "Night is for sleeping, not taking siestas.",
+        ANNOUNCE_NONIGHTSIESTA_CAVE = "I don't think I could really relax down here.",
 
         SKILLTREE = {
             HUNTING_1_TITLE = "Hunting",

@@ -88,6 +88,10 @@ STRINGS.CHARACTER_SURVIVABILITY.owlette = L.CHARACTER_SURVIVABILITY
 
 -- Custom speech strings
 STRINGS.CHARACTERS.OWLETTE = require "speech_owlette"
+STRINGS.CHARACTERS.OWLETTE.ANNOUNCE_NONIGHTSLEEP = L.ANNOUNCE_NONIGHTSLEEP
+STRINGS.CHARACTERS.OWLETTE.ANNOUNCE_NONIGHTSLEEP_CAVE = L.ANNOUNCE_NONIGHTSLEEP_CAVE
+STRINGS.CHARACTERS.OWLETTE.ANNOUNCE_NONIGHTSIESTA = L.ANNOUNCE_NONIGHTSIESTA
+STRINGS.CHARACTERS.OWLETTE.ANNOUNCE_NONIGHTSIESTA_CAVE = L.ANNOUNCE_NONIGHTSIESTA_CAVE
 
 -- Owl Feather strings
 STRINGS.NAMES.OWLETTE_FEATHER = L.NAMES_OWLETTE_FEATHER
@@ -546,9 +550,10 @@ AddStategraphPostInit("wilson", function(sg)
                 inst:DoTaskInTime(0.15, function()
                     if inst:IsValid() and inst.sg and (inst.sg.currentstate == "combat_lunge_start" or inst.sg.currentstate.name == "combat_lunge_start") then
                         inst.AnimState:SetDeltaTimeMultiplier(0)
-                    end
-                end)
-                inst:ClearBufferedAction()
+    end
+end)
+
+            inst:ClearBufferedAction()
                 local speed = GLOBAL.TheSkillTree:IsActivated("owlette_flight_5", "owlette") and 2.2 or 1
                 -- Set rotation BEFORE animation speed change
                 if data ~= nil and data.targetpos ~= nil then
@@ -891,6 +896,190 @@ AddStategraphPostInit("wilson", function(sg)
         end
         if _onexit then
             return _onexit(inst, ...)
+        end
+    end
+end)
+
+-- Day sleeper: nocturn characters can only sleep during the day
+AddStategraphPostInit("wilson", function(sg)
+    local bedroll = sg.states["bedroll"]
+    if bedroll then
+        local _onenter = bedroll.onenter
+        bedroll.onenter = function(inst, ...)
+            if inst:HasTag("nocturn") then
+                inst.components.locomotor:Stop()
+                local failreason =
+                    (not GLOBAL.TheWorld.state.isday and
+                        (GLOBAL.TheWorld:HasTag("cave") and "ANNOUNCE_NONIGHTSLEEP_CAVE" or "ANNOUNCE_NONIGHTSLEEP")
+                    )
+                    or (inst.IsNearDanger(inst) and "ANNOUNCE_NODANGERSLEEP")
+                    or (inst.components.hunger.current < GLOBAL.TUNING.CALORIES_MED and "ANNOUNCE_NOHUNGERSLEEP")
+                    or nil
+                if failreason == nil and inst.components.sleepingbaguser ~= nil then
+                    local _, sleepingbagfailreason = inst.components.sleepingbaguser:ShouldSleep()
+                    failreason = sleepingbagfailreason
+                end
+                if failreason ~= nil then
+                    inst:PushEvent("performaction", { action = inst.bufferedaction })
+                    inst:ClearBufferedAction()
+                    inst.sg:GoToState("idle")
+                    if inst.components.talker ~= nil then
+                        inst.components.talker:Say(GLOBAL.GetString(inst, failreason))
+                    end
+                    return
+                end
+                inst.AnimState:PlayAnimation("action_uniqueitem_pre")
+                inst.AnimState:PushAnimation("bedroll", false)
+                if inst.components.grue ~= nil then inst.components.grue:AddImmunity("sleeping") end
+                if inst.components.talker ~= nil then inst.components.talker:IgnoreAll("sleeping") end
+                if inst.components.firebug ~= nil then inst.components.firebug:Disable() end
+                if inst.components.playercontroller ~= nil then
+                    inst.components.playercontroller:EnableMapControls(false)
+                    inst.components.playercontroller:Enable(false)
+                end
+                inst:OnSleepIn()
+                inst.components.inventory:Hide()
+                inst:PushEvent("ms_closepopups")
+                inst:ShowActions(false)
+                if inst._sleepinghandsitem ~= nil then
+                    inst.AnimState:Show("ARM_carry")
+                    inst.AnimState:Hide("ARM_normal")
+                end
+            else
+                return _onenter(inst, ...)
+            end
+        end
+
+        for i, evt in ipairs(bedroll.events or {}) do
+            if evt.event == "animqueueover" then
+                local _fn = evt.fn
+                evt.fn = function(inst, data)
+                    if inst:HasTag("nocturn") then
+                        if inst.AnimState:AnimDone() then
+                            if not GLOBAL.TheWorld.state.isday or
+                                (inst.components.health ~= nil and inst.components.health.takingfiredamage) or
+                                (inst.components.burnable ~= nil and inst.components.burnable:IsBurning()) then
+                                inst:PushEvent("performaction", { action = inst.bufferedaction })
+                                inst:ClearBufferedAction()
+                                inst.sg.statemem.iswaking = true
+                                inst.sg:GoToState("wakeup")
+                            elseif inst:GetBufferedAction() then
+                                inst:PerformBufferedAction()
+                                if inst.components.playercontroller ~= nil then
+                                    inst.components.playercontroller:Enable(true)
+                                end
+                                inst.sg:AddStateTag("sleeping")
+                                inst.sg:AddStateTag("silentmorph")
+                                inst.sg:RemoveStateTag("nomorph")
+                                inst.sg:RemoveStateTag("busy")
+                                inst.AnimState:PlayAnimation("bedroll_sleep_loop", true)
+                            else
+                                inst.sg.statemem.iswaking = true
+                                inst.sg:GoToState("wakeup")
+                            end
+                        end
+                    else
+                        return _fn(inst, data)
+                    end
+                end
+                break
+            end
+        end
+    end
+
+    local tent = sg.states["tent"]
+    if tent then
+        local _onenter = tent.onenter
+        tent.onenter = function(inst, ...)
+            if inst:HasTag("nocturn") then
+                inst.components.locomotor:Stop()
+                local target = inst:GetBufferedAction().target
+                local siesta = target and target:HasTag("siestahut")
+                local failreason = nil
+                if not siesta then
+                    if not GLOBAL.TheWorld.state.isday then
+                        failreason = GLOBAL.TheWorld:HasTag("cave") and "ANNOUNCE_NONIGHTSLEEP_CAVE" or "ANNOUNCE_NONIGHTSLEEP"
+                    end
+                else
+                    if siesta ~= GLOBAL.TheWorld.state.isday then
+                        failreason = GLOBAL.TheWorld:HasTag("cave") and "ANNOUNCE_NONIGHTSIESTA_CAVE" or "ANNOUNCE_NONIGHTSIESTA"
+                    end
+                end
+                if failreason == nil and target and target.components.burnable and target.components.burnable:IsBurning() then
+                    failreason = "ANNOUNCE_NOSLEEPONFIRE"
+                end
+                if failreason == nil and inst.IsNearDanger(inst) then
+                    failreason = "ANNOUNCE_NODANGERSLEEP"
+                end
+                if failreason == nil and inst.components.hunger.current < GLOBAL.TUNING.CALORIES_MED then
+                    failreason = "ANNOUNCE_NOHUNGERSLEEP"
+                end
+                if failreason ~= nil then
+                    inst:PushEvent("performaction", { action = inst.bufferedaction })
+                    inst:ClearBufferedAction()
+                    inst.sg:GoToState("idle")
+                    if inst.components.talker ~= nil then
+                        inst.components.talker:Say(GLOBAL.GetString(inst, failreason))
+                    end
+                    return
+                end
+                inst.AnimState:PlayAnimation("pickup")
+                inst.sg:SetTimeout(6 * GLOBAL.FRAMES)
+                if inst.components.grue ~= nil then inst.components.grue:AddImmunity("sleeping") end
+                if inst.components.talker ~= nil then inst.components.talker:IgnoreAll("sleeping") end
+                if inst.components.firebug ~= nil then inst.components.firebug:Disable() end
+                if inst.components.playercontroller ~= nil then
+                    inst.components.playercontroller:EnableMapControls(false)
+                    inst.components.playercontroller:Enable(false)
+                end
+                inst:OnSleepIn()
+                inst.components.inventory:Hide()
+                inst:PushEvent("ms_closepopups")
+                inst:ShowActions(false)
+            else
+                return _onenter(inst, ...)
+            end
+        end
+
+        local _ontimeout = tent.ontimeout
+        tent.ontimeout = function(inst)
+            if inst:HasTag("nocturn") then
+                local bufferedaction = inst:GetBufferedAction()
+                if bufferedaction == nil then
+                    inst.AnimState:PlayAnimation("pickup_pst")
+                    inst.sg:GoToState("idle", true)
+                    return
+                end
+                local tent_ent = bufferedaction.target
+                if tent_ent == nil or
+                    not tent_ent.components.sleepingbag or
+                    not tent_ent:HasTag("tent") or
+                    tent_ent:HasTag("hassleeper") or
+                    not GLOBAL.TheWorld.state.isday or
+                    (tent_ent.components.burnable ~= nil and tent_ent.components.burnable:IsBurning()) then
+                    inst:PushEvent("performaction", { action = inst.bufferedaction })
+                    inst:ClearBufferedAction()
+                    inst.AnimState:PlayAnimation("pickup_pst")
+                    inst.sg:GoToState("idle", true)
+                else
+                    inst:PerformBufferedAction()
+                    inst.components.health:SetInvincible(true)
+                    inst:Hide()
+                    if inst.Physics ~= nil then
+                        inst.Physics:Teleport(inst.Transform:GetWorldPosition())
+                    end
+                    if inst.DynamicShadow ~= nil then
+                        inst.DynamicShadow:Enable(false)
+                    end
+                    inst.sg:AddStateTag("sleeping")
+                    inst.sg:RemoveStateTag("busy")
+                    if inst.components.playercontroller ~= nil then
+                        inst.components.playercontroller:Enable(true)
+                    end
+                end
+            else
+                return _ontimeout(inst)
+            end
         end
     end
 end)

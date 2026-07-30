@@ -319,6 +319,8 @@ return {
 	ANNOUNCE_NODANGERSIESTA = "It's too dangerous to siesta right now!",
 	ANNOUNCE_NONIGHTSIESTA = "Night is for sleeping, not taking siestas.",
 	ANNOUNCE_NONIGHTSIESTA_CAVE = "I don't think I could really relax down here.",
+	ANNOUNCE_NONIGHTSLEEP = "I can only sleep during the day!",
+	ANNOUNCE_NONIGHTSLEEP_CAVE = "I can't tell time down here!",
 	ANNOUNCE_NOHUNGERSIESTA = "I'm too hungry for a siesta!",
 	ANNOUNCE_NODANGERAFK = "Now's not the time to flee this fight!",
 	ANNOUNCE_NO_TRAP = "Well, that was easy.",
