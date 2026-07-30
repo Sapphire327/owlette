@@ -418,14 +418,15 @@ local common_postinit = function(inst)
 			local char_dir = inst.Transform:GetRotation()
 			local camera_rot = TheCamera:GetHeadingTarget()
 			local relative_dir = ((char_dir + camera_rot) % 360 + 360) % 360
+
+			inst.AnimState:OverrideSymbol("swap_object", "claws", "swap_object")
+			inst.AnimState:OverrideSymbol("lantern_overlay", "claws", "swap_object")
+
 			if relative_dir >= 135 and relative_dir <= 225 then
-				inst.AnimState:OverrideSymbol("lantern_overlay", "claws", "swap_object")
 				inst.AnimState:Show("lantern_overlay")
 				inst.AnimState:HideSymbol("swap_object")
 			else
-				inst.AnimState:ClearOverrideSymbol("lantern_overlay")
 				inst.AnimState:Hide("lantern_overlay")
-				inst.AnimState:OverrideSymbol("swap_object", "claws", "swap_object")
 				inst.AnimState:ShowSymbol("swap_object")
 			end
 		end)
