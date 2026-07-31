@@ -38,6 +38,6 @@ configuration_options = {
             { description = "Русский", data = "ru" },
             { description = "English", data = "en" },
         },
-        default = "ru",
+        default = "en",
     },
 }

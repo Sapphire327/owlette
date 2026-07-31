@@ -11,12 +11,12 @@ TUNING.OWLETTE_SANITY = 175
 
 -- Custom starting inventory
 TUNING.GAMEMODE_STARTING_ITEMS.DEFAULT.OWLETTE = {
-	"meat",
-	"meat",
-	"meat",
-	"meat",
-	"meat",
-	"meat",
+	"smallmeat",
+	"smallmeat",
+	"smallmeat",
+	"smallmeat",
+	"smallmeat",
+	"smallmeat",
 }
 
 local start_inv = {}
@@ -73,26 +73,21 @@ end
 
 local function update_night_advantage(inst)
 	if inst.components.playervision == nil then
-		print("[OWLETTE_NV] update_night_advantage: playervision is NIL, returning")
 		return
 	end
 	if TheSkillTree == nil then
-		print("[OWLETTE_NV] update_night_advantage: TheSkillTree is NIL, returning")
 		return
 	end
 
 	local is_dark = TheWorld.state.isnight or TheWorld.state.isdusk or TheWorld.state.iscave
 	local nv_has_skill = TheSkillTree:IsActivated("owlette_night_advantage_1", "owlette")
 	local fl_has_skill = TheSkillTree:IsActivated("owlette_flight_1", "owlette")
-	print("[OWLETTE_NV] update_night_advantage: NV=" .. tostring(nv_has_skill) .. " FL=" .. tostring(fl_has_skill) .. " is_dark=" .. tostring(is_dark) .. " ismastersim=" .. tostring(TheWorld.ismastersim))
 
 	local active = nv_has_skill and is_dark
 	if active then
 		inst.components.playervision:PushForcedNightVision(inst, 0, nil, true, nil, true)
-		print("[OWLETTE_NV] update_night_advantage: PUSHED night vision")
 	else
 		inst.components.playervision:PopForcedNightVision(inst)
-		print("[OWLETTE_NV] update_night_advantage: POPPED night vision")
 	end
 
 	-- Sync to server via RPC (skill tree data isn't syncing, so the server doesn't know)
@@ -112,7 +107,6 @@ local function onattacked(inst, data)
 	if inst.components.grue == nil then return end
 	if inst.components.grue.immunity == nil then return end
 	if not inst.components.grue.immunity["owlette_night_advantage_rpc"] then return end
-	print("[OWLETTE_NV] onattacked: healing darkness damage=" .. tostring(data.damage))
 	inst.components.health:DoDelta(math.abs(data.damage or 8))
 end
 
@@ -186,16 +180,13 @@ end
 
 local function apply_flight_skill_effects(inst)
     if TheSkillTree == nil or inst:HasTag("playerghost") then
-        print("[OWLETTE_DEBUG] apply_flight_skill_effects: early return, TheSkillTree=", tostring(TheSkillTree), "ghost=", tostring(inst:HasTag("playerghost")))
         return
     end
 
     local has_flight_1 = TheSkillTree:IsActivated("owlette_flight_1", "owlette")
-    print("[OWLETTE_DEBUG] apply_flight_skill_effects: has_flight_1=", tostring(has_flight_1), " ismastersim=", tostring(TheWorld.ismastersim))
 
     local at = inst.components.aoetargeting
     if at ~= nil then
-        print("[OWLETTE_DEBUG] apply_flight_skill_effects: setting enabled=", tostring(has_flight_1))
         at:SetEnabled(has_flight_1)
         if has_flight_1 then
             local range = 9
@@ -238,23 +229,18 @@ end
 -- Flight dash execution (shared between client prediction and server execution)
 -- inst = entity with aoespell (player), doer = target entity or nil, pos = ground position
 local function DoFlightDash(inst, doer, pos)
-	print("[OWLETTE_DEBUG] DoFlightDash called: inst=", inst, " doer=", doer, " pos=", pos)
 	if not inst or not pos then
-		print("[OWLETTE_DEBUG] DoFlightDash: invalid args")
 		return false
 	end
 
 	local target = doer or inst
-	print("[OWLETTE_DEBUG] DoFlightDash: target=", target)
 
 	if TheWorld ~= nil and TheWorld.Map ~= nil
 		and not TheWorld.Map:CanCastAtPoint(pos, false, false, 0) then
-		print("[OWLETTE_DEBUG] DoFlightDash: invalid position")
 		return false
 	end
 
 	if target._flight_dash_next_time and GetTime() < target._flight_dash_next_time then
-		print("[OWLETTE_DEBUG] DoFlightDash: on cooldown")
 		return false
 	end
 	local cooldown = target._flight_dash_cooldown or 8
@@ -271,7 +257,6 @@ local common_postinit = function(inst)
 	inst:AddTag("owlette")
 	inst:AddTag("nocturn")
 	inst:AddTag("aoeweapon_lunge")
-	print("[OWLETTE_DEBUG] common_postinit ran, aoeweapon_lunge tag set on ", inst)
 
 	-- Flight dash targeting, spell, and lunge components (client + server)
 	inst:AddComponent("aoetargeting")
