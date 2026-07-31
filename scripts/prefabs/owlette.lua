@@ -11,10 +11,12 @@ TUNING.OWLETTE_SANITY = 175
 
 -- Custom starting inventory
 TUNING.GAMEMODE_STARTING_ITEMS.DEFAULT.OWLETTE = {
-	"flint",
-	"flint",
-	"twigs",
-	"twigs",
+	"meat",
+	"meat",
+	"meat",
+	"meat",
+	"meat",
+	"meat",
 }
 
 local start_inv = {}
