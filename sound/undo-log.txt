@@ -1,11 +1,75 @@
-05:08:42 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sounds to Playlist
-05:09:34 c:\anthill_jobs\job504524\fmod4\tools\fmod_designer\src\eventform.ui.h:1529 HH: Add Simple Event
-05:09:39 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sound to Playlist
-05:10:13 c:\anthill_jobs\job504524\fmod4\tools\fmod_designer\src\eventform.ui.h:1529 HH: Add Simple Event
-05:10:22 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sound to Playlist
-05:10:37 c:\anthill_jobs\job504524\fmod4\tools\fmod_designer\src\eventform.ui.h:1529 HH: Add Simple Event
-05:10:43 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sounds to Playlist
-05:11:01 c:\anthill_jobs\job504524\fmod4\tools\fmod_designer\src\eventform.ui.h:1529 HH: Add Simple Event
-05:11:05 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sound to Playlist
-05:11:18 c:\anthill_jobs\job504524\fmod4\tools\fmod_designer\src\eventform.ui.h:1529 HH: Add Simple Event
-05:11:22 ..\..\src\simpleeventcontroller.cpp:1734 IS: Add Sound to Playlist
+21:47:54 ..\..\src\simpleeventcontroller.cpp:1420 IM: Set Resample Mode
+21:48:00 ..\..\src\simpleeventcontroller.cpp:1420 IM: Set Resample Mode
+21:48:37 ..\..\src\simpleeventcontroller.cpp:1420 IM: Set Resample Mode
+21:48:38 ..\..\src\simpleeventcontroller.cpp:1420 IM: Set Resample Mode
+21:48:39 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:39 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:39 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:40 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:40 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:40 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:40 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:42 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:42 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:42 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:42 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:42 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:42 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:42 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:42 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:42 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:43 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:44 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:45 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:45 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:45 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:45 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:45 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:45 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:45 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:45 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:46 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:46 ..\..\src\simpleeventcontroller.cpp:1517 IO: Adjust Fixed Sample Rate
+21:48:49 ..\..\src\simpleeventcontroller.cpp:1420 IM: Set Resample Mode

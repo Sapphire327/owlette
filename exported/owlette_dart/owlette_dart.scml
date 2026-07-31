@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spriter_data scml_version="1.0" generator="BrashMonkey Spriter" generator_version="b5">
+    <folder id="0">
+        <file id="0" name="owlette_dart.png" width="56" height="144" pivot_x="0.5" pivot_y="0.5"/>
+        <file id="1" name="grass-0.png" width="105" height="28" pivot_x="0" pivot_y="1"/>
+        <file id="2" name="gun-1.png" width="44" height="190" pivot_x="0" pivot_y="1"/>
+    </folder>
+    <entity id="0" name="owlette_dart">
+        <animation id="0" name="idle" length="1000">
+            <mainline>
+                <key id="0">
+                    <object_ref id="0" name="gun-1" folder="0" file="2" abs_x="-121.959793" abs_y="167.98637" abs_pivot_x="0" abs_pivot_y="1" abs_angle="19.947476" abs_scale_x="1.154299" abs_scale_y="1.156143" abs_a="1" timeline="2" key="0" z_index="0"/>
+                    <object_ref id="1" name="owlette_dart" folder="0" file="0" abs_x="-1.438849" abs_y="-2.158273" abs_pivot_x="0.48817" abs_pivot_y="0.148558" abs_angle="343.637" abs_scale_x="1" abs_scale_y="1" abs_a="1" timeline="0" key="0" z_index="1"/>
+                    <object_ref id="2" name="grass-0" folder="0" file="1" abs_x="-86.775943" abs_y="9" abs_pivot_x="0" abs_pivot_y="1" abs_angle="0" abs_scale_x="1.448113" abs_scale_y="1.450626" abs_a="1" timeline="1" key="0" z_index="2"/>
+                </key>
+            </mainline>
+            <timeline id="0" name="owlette_dart">
+                <key id="0" spin="0">
+                    <object folder="0" file="0" x="-1.438849" y="-2.158273" pivot_x="0.48817" pivot_y="0.148558" angle="343.637"/>
+                </key>
+            </timeline>
+            <timeline id="1" name="grass-0">
+                <key id="0" spin="0">
+                    <object folder="0" file="1" x="-86.775943" y="9" angle="0" scale_x="1.448113" scale_y="1.450626"/>
+                </key>
+            </timeline>
+            <timeline id="2" name="gun-1">
+                <key id="0" spin="0">
+                    <object folder="0" file="2" x="-121.959793" y="167.98637" angle="19.947476" scale_x="1.154299" scale_y="1.156143"/>
+                </key>
+            </timeline>
+        </animation>
+        <animation id="1" name="dart" length="1000">
+            <mainline>
+                <key id="0">
+                    <object_ref id="0" name="owlette_dart" folder="0" file="0" abs_x="42.771084" abs_y="0.60241" abs_pivot_x="0.48817" abs_pivot_y="0.230903" abs_angle="90.584631" abs_scale_x="1" abs_scale_y="1" abs_a="1" timeline="0" key="0" z_index="0"/>
+                </key>
+            </mainline>
+            <timeline id="0" name="owlette_dart">
+                <key id="0" spin="0">
+                    <object folder="0" file="0" x="42.771084" y="0.60241" pivot_x="0.48817" pivot_y="0.230903" angle="90.584631"/>
+                </key>
+            </timeline>
+        </animation>
+    </entity>
+</spriter_data>

@@ -2,8 +2,10 @@ local owlette_bleed = require("owlette_bleed")
 
 local assets =
 {
-    Asset("ANIM", "anim/blow_dart.zip"),
+    Asset("ANIM", "anim/owlette_dart.zip"),
     Asset("ANIM", "anim/swap_blowdart.zip"),
+    Asset("ATLAS", "images/inventoryimages/owlette_dart.xml"),
+    Asset("IMAGE", "images/inventoryimages/owlette_dart.tex"),
 }
 
 local BLEED_DPS = 25
@@ -29,7 +31,7 @@ local function onthrown(inst, data)
 end
 
 local function darthrown(inst)
-    inst.AnimState:PlayAnimation("dart_pipe")
+    inst.AnimState:PlayAnimation("dart")
     inst:AddTag("NOCLICK")
     inst.persists = false
 end
@@ -61,9 +63,9 @@ local function fn()
 
     MakeInventoryPhysics(inst)
 
-    inst.AnimState:SetBank("blow_dart")
-    inst.AnimState:SetBuild("blow_dart")
-    inst.AnimState:PlayAnimation("idle_pipe")
+    inst.AnimState:SetBank("owlette_dart")
+    inst.AnimState:SetBuild("owlette_dart")
+    inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("blowdart")
     inst:AddTag("sharp")
@@ -93,7 +95,8 @@ local function fn()
     inst:AddComponent("inspectable")
 
     inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem.imagename = "blowdart_pipe"
+    inst.components.inventoryitem.imagename = "owlette_dart"
+    inst.components.inventoryitem.atlasname = "images/inventoryimages/owlette_dart.xml"
 
     inst:AddComponent("stackable")
     inst.components.stackable.maxsize = 20
@@ -105,7 +108,7 @@ local function fn()
 
     MakeHauntableLaunch(inst)
 
-    local swap_data = {sym_build = "swap_blowdart", bank = "blow_dart", anim = "idle_pipe"}
+    local swap_data = {sym_build = "swap_blowdart", bank = "owlette_dart", anim = "idle"}
     inst.components.floater:SetBankSwapOnFloat(true, -4, swap_data)
 
     return inst

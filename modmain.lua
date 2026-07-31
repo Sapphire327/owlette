@@ -58,6 +58,14 @@ table.insert(Assets, Asset("ATLAS", "images/inventoryimages/owlette_claws.xml"))
 table.insert(Assets, Asset("IMAGE", "images/inventoryimages/owlette_claws.tex"))
 GLOBAL.RegisterInventoryItemAtlas("images/inventoryimages/owlette_claws.xml", "owlette_claws.tex")
 
+-- Dart item
+Assets = Assets or {}
+table.insert(Assets, Asset("ANIM", "anim/owlette_dart.zip"))
+table.insert(Assets, Asset("ANIM", "anim/swap_blowdart.zip"))
+table.insert(Assets, Asset("ATLAS", "images/inventoryimages/owlette_dart.xml"))
+table.insert(Assets, Asset("IMAGE", "images/inventoryimages/owlette_dart.tex"))
+GLOBAL.RegisterInventoryItemAtlas("images/inventoryimages/owlette_dart.xml", "owlette_dart.tex")
+
 -- Dash animation bank
 
 local require = GLOBAL.require
@@ -85,7 +93,8 @@ AddCharacterRecipe("owlette_dart",
     {
         builder_tag = "owlette",
         force_hint = true,
-        image = "blowdart_pipe.tex",
+        atlas = "images/inventoryimages/owlette_dart.xml",
+        image = "owlette_dart.tex",
         numtogive = 1,
         description = "OWLETTE_DART",
     }
