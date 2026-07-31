@@ -13,6 +13,8 @@ return {
         DESCRIBE_OWLETTE_FEATHER = "Мягкое пёрышко с Оулетты.",
         NAMES_OWLETTE_CLAWS = "Когти",
         DESCRIBE_OWLETTE_CLAWS = "Острые совиные когти.",
+        NAMES_OWLETTE_DART = "Острый дротик",
+        DESCRIBE_OWLETTE_DART = "Наносит 125 урона за 5 секунд.",
 
         SCRATCH_BURROW = "Выманить",
         EMPTY_BURROW = "Нора пуста.",
@@ -97,6 +99,8 @@ return {
         DESCRIBE_OWLETTE_FEATHER = "A soft feather from Owlette.",
         NAMES_OWLETTE_CLAWS = "Claws",
         DESCRIBE_OWLETTE_CLAWS = "Sharp owl Claws.",
+        NAMES_OWLETTE_DART = "Sharp Dart",
+        DESCRIBE_OWLETTE_DART = "Deals 125 damage over 5 seconds.",
 
         SCRATCH_BURROW = "Lure",
         EMPTY_BURROW = "The burrow is empty.",

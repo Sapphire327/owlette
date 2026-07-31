@@ -4,7 +4,7 @@ PrefabFiles = {
 	"tent",
 	"owlette_feather",
 	"owlette_claws",
-
+	"owlette_dart",
 }
 
 Assets = {
@@ -79,6 +79,18 @@ AddCharacterRecipe("owlette_claws",
     }
 )
 
+AddCharacterRecipe("owlette_dart",
+    { Ingredient("owlette_feather", 1), Ingredient("cutreeds", 2), Ingredient("houndstooth", 1) },
+    { SCIENCE = 2 },
+    {
+        builder_tag = "owlette",
+        force_hint = true,
+        image = "blowdart_pipe.tex",
+        numtogive = 1,
+        description = L.DESCRIBE_OWLETTE_DART,
+    }
+)
+
 -- The character select screen lines
 STRINGS.CHARACTER_TITLES.owlette = L.CHARACTER_TITLES
 STRINGS.CHARACTER_NAMES.owlette = L.CHARACTER_NAMES
@@ -100,6 +112,10 @@ STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_FEATHER = L.DESCRIBE_OWLETTE_FEATHER
 -- Claws strings
 STRINGS.NAMES.OWLETTE_CLAWS = L.NAMES_OWLETTE_CLAWS
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_CLAWS = L.DESCRIBE_OWLETTE_CLAWS
+
+-- Dart strings
+STRINGS.NAMES.OWLETTE_DART = L.NAMES_OWLETTE_DART
+STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_DART = L.DESCRIBE_OWLETTE_DART
 
 -- The character's name as appears in-game 
 STRINGS.NAMES.OWLETTE = L.NAME_OWLETTE

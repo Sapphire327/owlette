@@ -1,3 +1,5 @@
+local owlette_bleed = require("owlette_bleed")
+
 local assets =
 {
     Asset("ANIM", "anim/claws.zip"),
@@ -49,35 +51,7 @@ local function UpdateAttackPeriod(weapon, owner)
     weapon.attackperiod = period
 end
 
-local function StartBleed(target, dps, duration)
-    if not target or not target:IsValid() or not target.components.health then return end
-
-    if target._owlette_bleedtask then
-        return
-    end
-
-    local ticks = duration
-
-    target._owlette_bleedtask = target:DoPeriodicTask(1, function()
-        if not target:IsValid() or not target.components.health then
-            return
-        end
-
-        target.components.health:DoDelta(-dps, false, "owlette_claws")
-        target.AnimState:SetAddColour(0.25, 0, 0, 0)
-        target:DoTaskInTime(0.15, function()
-            if target:IsValid() then
-                target.AnimState:SetAddColour(0, 0, 0, 0)
-            end
-        end)
-
-        ticks = ticks - 1
-        if ticks <= 0 then
-            target._owlette_bleedtask:Cancel()
-            target._owlette_bleedtask = nil
-        end
-    end)
-end
+local StartBleed = owlette_bleed.StartBleed
 
 local function OnEquip(inst, owner)
     UpdateClawsVisual(inst)
