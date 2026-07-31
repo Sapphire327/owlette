@@ -506,7 +506,7 @@ local SKILLS = {
 local ORDERS = {
     {"hunting",      {-220, 220}},
     {"claws",        { -75, 220}},
-    {"night_advantage", {   0, 220}},
+    {"night_advantage", {   0, 60}},
     {"flight",       {  75, 220}},
     {"feathers",     { 220, 220}},
 }

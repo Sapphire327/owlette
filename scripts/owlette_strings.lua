@@ -23,6 +23,11 @@ return {
         ANNOUNCE_NONIGHTSIESTA_CAVE = "Вряд ли я смогу тут расслабиться.",
 
         SKILLTREE = {
+            HUNTING_HEADER = "Охота",
+            CLAWS_HEADER = "Когти",
+            NIGHT_ADVANTAGE_HEADER = "Ночное\nпреимущество",
+            FLIGHT_HEADER = "Полёт",
+            FEATHERS_HEADER = "Оперение",
             HUNTING_1_TITLE = "Охота",
             HUNTING_1_DESC = "занятые кроликом норы, будут подсвечены. Лучшая видимость следов коалослона",
             HUNTING_2_TITLE = "Выманивание",
@@ -102,6 +107,11 @@ return {
         ANNOUNCE_NONIGHTSIESTA_CAVE = "I don't think I could really relax down here.",
 
         SKILLTREE = {
+            HUNTING_HEADER = "Hunting",
+            CLAWS_HEADER = "Claws",
+            NIGHT_ADVANTAGE_HEADER = "Night\nadvantage",
+            FLIGHT_HEADER = "Flight",
+            FEATHERS_HEADER = "Plumage",
             HUNTING_1_TITLE = "Hunting",
             HUNTING_1_DESC = "Rabbit burrows are highlighted. Better koalefant track visibility.",
             HUNTING_2_TITLE = "Luring",
