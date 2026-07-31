@@ -14,7 +14,7 @@ return {
         NAMES_OWLETTE_CLAWS = "Когти",
         DESCRIBE_OWLETTE_CLAWS = "Острые совиные когти.",
         NAMES_OWLETTE_DART = "Острый дротик",
-        DESCRIBE_OWLETTE_DART = "Наносит 125 урона за 5 секунд.",
+        DESCRIBE_OWLETTE_DART = "Вызывает повышенное кровотечение у врагов.",
 
         SCRATCH_BURROW = "Выманить",
         EMPTY_BURROW = "Нора пуста.",
@@ -100,7 +100,7 @@ return {
         NAMES_OWLETTE_CLAWS = "Claws",
         DESCRIBE_OWLETTE_CLAWS = "Sharp owl Claws.",
         NAMES_OWLETTE_DART = "Sharp Dart",
-        DESCRIBE_OWLETTE_DART = "Deals 125 damage over 5 seconds.",
+        DESCRIBE_OWLETTE_DART = "Causes heavy bleeding in enemies.",
 
         SCRATCH_BURROW = "Lure",
         EMPTY_BURROW = "The burrow is empty.",

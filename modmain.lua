@@ -75,7 +75,7 @@ AddCharacterRecipe("owlette_claws",
         atlas = "images/inventoryimages/owlette_claws.xml",
         image = "owlette_claws.tex",
         numtogive = 1,
-        description = L.DESCRIBE_OWLETTE_CLAWS,
+        description = "OWLETTE_CLAWS",
     }
 )
 
@@ -87,7 +87,7 @@ AddCharacterRecipe("owlette_dart",
         force_hint = true,
         image = "blowdart_pipe.tex",
         numtogive = 1,
-        description = L.DESCRIBE_OWLETTE_DART,
+        description = "OWLETTE_DART",
     }
 )
 
@@ -116,6 +116,10 @@ STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_CLAWS = L.DESCRIBE_OWLETTE_CLAWS
 -- Dart strings
 STRINGS.NAMES.OWLETTE_DART = L.NAMES_OWLETTE_DART
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.OWLETTE_DART = L.DESCRIBE_OWLETTE_DART
+
+-- Recipe descriptions (crafting menu)
+STRINGS.RECIPE_DESC.OWLETTE_CLAWS = L.DESCRIBE_OWLETTE_CLAWS
+STRINGS.RECIPE_DESC.OWLETTE_DART = L.DESCRIBE_OWLETTE_DART
 
 -- The character's name as appears in-game 
 STRINGS.NAMES.OWLETTE = L.NAME_OWLETTE
