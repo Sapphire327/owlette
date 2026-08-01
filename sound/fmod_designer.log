@@ -3,3 +3,112 @@ Warning: QPainter::setPen: Painter not active
 Warning: QPainter::setBrush: Painter not active
 Warning: QPainter::setRenderHint: Painter must be active to set rendering hints
 Warning: QPainter::setPen: Painter not active
+Debug: "18:10:22 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode" 
+Debug: "18:10:42 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode" 
+Debug: "18:11:08 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode" 
+Debug: "18:11:11 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode" 
+Debug: "18:11:14 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode" 
+Debug: "18:11:20 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode" 
+Debug: "18:11:22 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode" 
+Debug: "18:11:25 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode" 
+Debug: "18:11:28 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode" 
+Debug: 
+Building project 'customvoice'...
+Debug: Building project C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\customvoice.fev...
+Debug: Unique sound defs 1/9
+Debug: Retrieving sound file info...
+Debug: Retrieving reverb info...
+Debug: FEV file written ok
+Debug: Unique Envelope Points: 0 of 0
+Debug: Unique Strings: 407 characters of 407
+Debug: Caching sound file details for ''...
+Debug: carol.wav
+Debug: death.mp3
+Debug: emote1.mp3
+Debug: emote2.mp3
+Debug: ghost1.mp3
+Debug: ghost2.mp3
+Debug: ghost3.mp3
+Debug: hit 2.mp3
+Debug: hit1.mp3
+Debug: hit3.mp3
+Debug: hit4.mp3
+Debug: hoot.mp3
+Debug: hoot1.mp3
+Debug: hoot2.mp3
+Debug: hoot3.mp3
+Debug: sleep.mp3
+Debug: Building 'customvoice.fsb'
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\death.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\emote1.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\emote2.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\carol.wav
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\ghost2.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\ghost1.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hit 2.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hit1.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hit3.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hit4.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\ghost3.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hoot1.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hoot.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hoot2.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hoot3.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\sleep.mp3
+Debug: Writing FSB...
+Debug: Finished building FSB
+Debug: 
+Debug: 
+Summary of build:
+SUCCESS: C:/Program Files (x86)/Steam/steamapps/common/Don't Starve Together/mods/owlette/sound/customvoice.fev
+SUCCESS: customvoice.fsb
+Debug: 
+Building project 'customvoice'...
+Debug: Building project C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\customvoice.fev...
+Debug: Unique sound defs 1/9
+Debug: Retrieving sound file info...
+Debug: Retrieving reverb info...
+Debug: FEV file written ok
+Debug: Unique Envelope Points: 0 of 0
+Debug: Unique Strings: 407 characters of 407
+Debug: Caching sound file details for ''...
+Debug: carol.wav
+Debug: death.mp3
+Debug: emote1.mp3
+Debug: emote2.mp3
+Debug: ghost1.mp3
+Debug: ghost2.mp3
+Debug: ghost3.mp3
+Debug: hit 2.mp3
+Debug: hit1.mp3
+Debug: hit3.mp3
+Debug: hit4.mp3
+Debug: hoot.mp3
+Debug: hoot1.mp3
+Debug: hoot2.mp3
+Debug: hoot3.mp3
+Debug: sleep.mp3
+Debug: Building 'customvoice.fsb'
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\death.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\carol.wav
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\emote1.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\emote2.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\ghost1.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\ghost2.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\ghost3.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hit 2.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hit1.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hit3.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hoot.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hit4.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hoot1.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hoot2.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\hoot3.mp3
+Debug: Encoded C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\owlette\sound\sleep.mp3
+Debug: Writing FSB...
+Debug: Finished building FSB
+Debug: 
+Debug: 
+Summary of build:
+SUCCESS: C:/Program Files (x86)/Steam/steamapps/common/Don't Starve Together/mods/owlette/sound/customvoice.fev
+SUCCESS: customvoice.fsb

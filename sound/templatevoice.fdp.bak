@@ -4,7 +4,7 @@
 <version>4</version>
 <eventgroup_nextid>0</eventgroup_nextid>
 <soundbank_nextid>1</soundbank_nextid>
-<sounddef_nextid>9</sounddef_nextid>
+<sounddef_nextid>10</sounddef_nextid>
 <build_project>1</build_project>
 <build_headerfile>0</build_headerfile>
 <build_banklists>0</build_banklists>
@@ -390,8 +390,8 @@
 </waveform>
 </sounddef>
 <sounddef>
-<name>/__simpleevent_sounddef__/ghost_8</name>
-<guid>{f8935cb1-acc3-49af-931a-a748f8776055}</guid>
+<name>/__simpleevent_sounddef__/ghost_LP_9</name>
+<guid>{519b8d26-7b03-410c-b3e0-b199b9f1268f}</guid>
 <type>randomnorepeat</type>
 <playlistmode>0</playlistmode>
 <randomrepeatsounds>0</randomrepeatsounds>
@@ -1964,8 +1964,8 @@
 </simpleevent>
 <simpleevent>
 <event>
-<name>ghost</name>
-<guid>{10787fae-8903-489a-8335-13143aebd7b0}</guid>
+<name>ghost_LP</name>
+<guid>{f7ac0d1a-903c-4fe4-8d26-916813d2633d}</guid>
 <parameter_nextid>0</parameter_nextid>
 <layer_nextid>1</layer_nextid>
 <layer>
@@ -1978,7 +1978,7 @@
 <envlock>0</envlock>
 <priority>-1</priority>
 <sound>
-<name>/__simpleevent_sounddef__/ghost_8</name>
+<name>/__simpleevent_sounddef__/ghost_LP_9</name>
 <x>0</x>
 <width>1</width>
 <startmode>0</startmode>
@@ -2413,7 +2413,7 @@
 </waveform>
 <waveform>
 <filename>ghost1.mp3</filename>
-<guid>{6f4a5b54-6433-4232-bf5a-8c15184ef04d}</guid>
+<guid>{5900b16a-d35c-43d2-88ed-9702045a783d}</guid>
 <mindistance>1</mindistance>
 <maxdistance>10000</maxdistance>
 <deffreq>48000</deffreq>
@@ -2458,7 +2458,7 @@
 </waveform>
 <waveform>
 <filename>ghost2.mp3</filename>
-<guid>{32598622-6671-4ccc-ae8f-e89f449da2cc}</guid>
+<guid>{dd96409e-3872-4747-a08b-e029e8fc0e06}</guid>
 <mindistance>1</mindistance>
 <maxdistance>10000</maxdistance>
 <deffreq>16000</deffreq>
@@ -2503,7 +2503,7 @@
 </waveform>
 <waveform>
 <filename>ghost3.mp3</filename>
-<guid>{169cccc3-78a8-4790-91ba-7cad7dc5390b}</guid>
+<guid>{19750199-4248-43e6-ba16-2bcf289f20fa}</guid>
 <mindistance>1</mindistance>
 <maxdistance>10000</maxdistance>
 <deffreq>44100</deffreq>

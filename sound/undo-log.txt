@@ -1,0 +1,9 @@
+18:10:22 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode
+18:10:42 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode
+18:11:08 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode
+18:11:11 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode
+18:11:14 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode
+18:11:20 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode
+18:11:22 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode
+18:11:25 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode
+18:11:28 ..\..\src\propertyeditor.cpp:4234 ER: Set Mode

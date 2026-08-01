@@ -505,7 +505,7 @@
 <maxplaybacks>1</maxplaybacks>
 <maxplaybacks_behavior>Steal_oldest</maxplaybacks_behavior>
 <stealpriority>10000</stealpriority>
-<mode>x_2d</mode>
+<mode>x_3d</mode>
 <ignoregeometry>No</ignoregeometry>
 <rolloff>Logarithmic</rolloff>
 <mindistance>1</mindistance>
@@ -695,7 +695,7 @@
 <maxplaybacks>1</maxplaybacks>
 <maxplaybacks_behavior>Steal_oldest</maxplaybacks_behavior>
 <stealpriority>10000</stealpriority>
-<mode>x_2d</mode>
+<mode>x_3d</mode>
 <ignoregeometry>No</ignoregeometry>
 <rolloff>Logarithmic</rolloff>
 <mindistance>1</mindistance>
@@ -884,7 +884,7 @@
 <maxplaybacks>1</maxplaybacks>
 <maxplaybacks_behavior>Steal_oldest</maxplaybacks_behavior>
 <stealpriority>10000</stealpriority>
-<mode>x_2d</mode>
+<mode>x_3d</mode>
 <ignoregeometry>No</ignoregeometry>
 <rolloff>Logarithmic</rolloff>
 <mindistance>1</mindistance>
@@ -1073,7 +1073,7 @@
 <maxplaybacks>1</maxplaybacks>
 <maxplaybacks_behavior>Steal_oldest</maxplaybacks_behavior>
 <stealpriority>10000</stealpriority>
-<mode>x_2d</mode>
+<mode>x_3d</mode>
 <ignoregeometry>No</ignoregeometry>
 <rolloff>Logarithmic</rolloff>
 <mindistance>1</mindistance>
@@ -1262,7 +1262,7 @@
 <maxplaybacks>1</maxplaybacks>
 <maxplaybacks_behavior>Steal_oldest</maxplaybacks_behavior>
 <stealpriority>10000</stealpriority>
-<mode>x_2d</mode>
+<mode>x_3d</mode>
 <ignoregeometry>No</ignoregeometry>
 <rolloff>Logarithmic</rolloff>
 <mindistance>1</mindistance>
@@ -1451,7 +1451,7 @@
 <maxplaybacks>1</maxplaybacks>
 <maxplaybacks_behavior>Steal_oldest</maxplaybacks_behavior>
 <stealpriority>10000</stealpriority>
-<mode>x_2d</mode>
+<mode>x_3d</mode>
 <ignoregeometry>No</ignoregeometry>
 <rolloff>Logarithmic</rolloff>
 <mindistance>1</mindistance>
@@ -1640,7 +1640,7 @@
 <maxplaybacks>1</maxplaybacks>
 <maxplaybacks_behavior>Steal_oldest</maxplaybacks_behavior>
 <stealpriority>10000</stealpriority>
-<mode>x_2d</mode>
+<mode>x_3d</mode>
 <ignoregeometry>No</ignoregeometry>
 <rolloff>Logarithmic</rolloff>
 <mindistance>1</mindistance>
@@ -1829,7 +1829,7 @@
 <maxplaybacks>1</maxplaybacks>
 <maxplaybacks_behavior>Steal_oldest</maxplaybacks_behavior>
 <stealpriority>10000</stealpriority>
-<mode>x_2d</mode>
+<mode>x_3d</mode>
 <ignoregeometry>No</ignoregeometry>
 <rolloff>Logarithmic</rolloff>
 <mindistance>1</mindistance>
@@ -2018,7 +2018,7 @@
 <maxplaybacks>1</maxplaybacks>
 <maxplaybacks_behavior>Steal_oldest</maxplaybacks_behavior>
 <stealpriority>10000</stealpriority>
-<mode>x_2d</mode>
+<mode>x_3d</mode>
 <ignoregeometry>No</ignoregeometry>
 <rolloff>Logarithmic</rolloff>
 <mindistance>1</mindistance>
