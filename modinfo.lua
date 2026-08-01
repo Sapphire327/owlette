@@ -1,8 +1,8 @@
 -- This information tells other players more about the mod
 name = "Owlette"
-description = "A character template for Don't Starve Together."
+description = "Owlette — The Night Owl"
 author = "Sapphire327"
-version = "1.2.6" -- This is the version of the template. Change it to your own number.
+version = "1.2.8" -- This is the version of the template. Change it to your own number.
 
 -- This is the URL name of the mod's thread on the forum; the part after the ? and before the first & in the url
 forumthread = "/files/file/950-extended-sample-character/"

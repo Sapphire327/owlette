@@ -894,7 +894,8 @@ AddComponentPostInit("edible", function(self)
     local _GetHunger = self.GetHunger
     self.GetHunger = function(self, eater)
         local val = _GetHunger(self, eater)
-        if eater and eater:IsValid() and eater:HasTag("owlette") and self.inst and not self.inst:HasTag("meat") then
+        local ismeat = self.inst ~= nil and (self.inst:HasTag("meat") or self.foodtype == GLOBAL.FOODTYPE.MEAT)
+        if eater and eater:IsValid() and eater:HasTag("owlette") and not ismeat then
             return val * 0.5
         end
         return val
