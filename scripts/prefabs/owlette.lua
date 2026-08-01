@@ -467,13 +467,14 @@ local master_postinit = function(inst)
     -- Night vision: managed via RPC from client (skill tree data doesn't sync to server)
     inst:ListenForEvent("attacked", onattacked)
 
-    -- Feather drop: every 3 mornings
+    -- Feather drop: every 3 mornings, every 2 with the Molting skill
     inst.owlette_feather_day = 0
     inst:WatchWorldState("phase", function(inst, phase)
         if phase ~= "day" then return end
+        local every = TheSkillTree and TheSkillTree:IsActivated("owlette_feathers_5", "owlette") and 2 or 3
         inst.owlette_feather_day = inst.owlette_feather_day + 1
-        if inst.owlette_feather_day < 3 then return end
-    inst.owlette_feather_day = inst.owlette_feather_day or 0
+        if inst.owlette_feather_day < every then return end
+        inst.owlette_feather_day = 0
 
         local feather = SpawnPrefab("owlette_feather")
         if feather then

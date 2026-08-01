@@ -81,7 +81,7 @@ return {
             FEATHERS_4_TITLE = "Сухое перо",
             FEATHERS_4_DESC = "Скорость высыхания увеличена вдвое.",
             FEATHERS_5_TITLE = "Линька",
-            FEATHERS_5_DESC = "Каждые 2 дня Совиное перо появляется в инвентаре.",
+            FEATHERS_5_DESC = "Каждые 2 дня Совиное перо выпадает.",
         },
     },
 
@@ -167,7 +167,7 @@ return {
             FEATHERS_4_TITLE = "Dry Feather",
             FEATHERS_4_DESC = "Drying rate doubled.",
             FEATHERS_5_TITLE = "Molting",
-            FEATHERS_5_DESC = "Every 2 days, an Owl Feather appears in your inventory.",
+            FEATHERS_5_DESC = "Every 2 days, an Owl Feather falls.",
         },
     },
 }

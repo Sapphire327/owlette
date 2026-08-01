@@ -470,36 +470,6 @@ local SKILLS = {
         pos = {130,240},
         group = "feathers",
         tags = {"feathers"},
-        onactivate = function(inst, fromload)
-            if not TheWorld.ismastersim then return end
-            inst.owlette_feathers_5_day = 0
-            inst.owlette_feathers_5_wasday = TheWorld.state.isday
-            inst.owlette_feathers_5_task = inst:DoPeriodicTask(1, function()
-                if not inst:IsValid() then return end
-                local isday = TheWorld.state.isday
-                if not inst.owlette_feathers_5_wasday and isday then
-                    inst.owlette_feathers_5_day = inst.owlette_feathers_5_day + 1
-                    if inst.owlette_feathers_5_day >= 2 then
-                        inst.owlette_feathers_5_day = 0
-                        local feather = SpawnPrefab("owlette_feather")
-                        if feather then
-                            if inst.components.inventory and not inst.components.inventory:GiveItem(feather) then
-                                local x, y, z = inst.Transform:GetWorldPosition()
-                                feather.Transform:SetPosition(x, y, z)
-                            end
-                        end
-                    end
-                end
-                inst.owlette_feathers_5_wasday = isday
-            end)
-        end,
-        ondeactivate = function(inst, fromload)
-            if not TheWorld.ismastersim then return end
-            if inst.owlette_feathers_5_task then
-                inst.owlette_feathers_5_task:Cancel()
-                inst.owlette_feathers_5_task = nil
-            end
-        end,
     },
 }
 
